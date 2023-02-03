@@ -144,5 +144,4 @@ Config/config.json
 /Assistants/sound/
 /Data/sticker/src/
 node_modules
-yarn.lock
 /docs/.vitepress/cache/deps/
