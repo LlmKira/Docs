@@ -29,7 +29,7 @@ export default defineConfig({
                 '/models/': sidebarModels()
             },
             editLink: {
-                pattern: 'https://github.com/LLMKira/Openaibot/edit/main/docs/:path',
+                pattern: 'https://github.com/LLMKira/Docs/edit/main/docs/:path',
                 text: 'Edit On GitHub'
             },
 
