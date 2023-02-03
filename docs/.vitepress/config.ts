@@ -5,7 +5,7 @@ import {defineConfig} from 'vitepress'
 export default defineConfig({
         lang: 'zh-CN',
         title: 'Openai Kira Org',
-        // base: "",
+        base: "/Docs/",
         description: 'Kira Kira -- GPT related models.',
 
         lastUpdated: true,
