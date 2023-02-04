@@ -137,12 +137,15 @@ Api 后端请使用 https://github.com/LLMkira/MoeGoe
 
 ## 配置 Redis 数据库
 
-```json
+```json5
 {
-  "host": "localhost",
-  "port": 6379,
-  "db": 0,
-  "password": null
+  // .....
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "db": 0,
+    "password": null
+  },
 }
 ```
 
@@ -150,6 +153,7 @@ Api 后端请使用 https://github.com/LLMkira/MoeGoe
 
 ```json
 {
+  // ....
   "plugin": {
     "search": [
       "https://www.exp.com/search?word={}"

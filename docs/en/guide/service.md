@@ -139,10 +139,13 @@ If it is not available, the text may be longer than the set limit or the server 
 
 ```json
 {
-  "host": "localhost",
-  "port": 6379,
-  "db": 0,
-  "password": null
+  // ....
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "db": 0,
+    "password": null
+  },
 }
 ```
 
@@ -150,6 +153,7 @@ If it is not available, the text may be longer than the set limit or the server 
 
 ```json
 {
+  // ......
   "plugin": {
     "search": [
       "https://www.exp.com/search?word={}"
