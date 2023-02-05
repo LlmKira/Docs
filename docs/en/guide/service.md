@@ -27,7 +27,7 @@ All service configurations are given here.
   "media": {
     "blip": {
       "status": false,
-      "model": "large"
+      "api": "http://127.0.0.1:10885/upload/"
     },
     "sticker": {
       "status": false,
@@ -137,7 +137,7 @@ If it is not available, the text may be longer than the set limit or the server 
 
 ## Configuring the Redis database
 
-```json
+```json5
 {
   // ....
   "redis": {
@@ -151,7 +151,7 @@ If it is not available, the text may be longer than the set limit or the server 
 
 ## Configuring the plug-in system
 
-```json
+```json5
 {
   // ......
   "plugin": {
@@ -217,7 +217,7 @@ cloud lexicon for updates.
   "media": {
     "blip": {
       "status": false,
-      "model": "large"
+      "api": "http://127.0.0.1:10885/upload/"
     },
     "sticker": {
       "status": false,
@@ -229,9 +229,10 @@ cloud lexicon for updates.
 
 ### Blip
 
-Blip, `media`, is used to understand images and stickers, and is optionally turned on, taking up 2GB of memory when
-turned on.
-Blip's `model` is available in `base` and `large` models, with the larger model having more detail.
+Please deploy https://github.com/LlmKira/BlipServer for understanding images.
+
+Blip, `media`, is used to understand images and stickers.
+The model for Blip is available as a `base` or `large` model, with the larger model having more detail.
 
 ### Sticker (experimental)
 

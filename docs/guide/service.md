@@ -27,7 +27,7 @@
   "media": {
     "blip": {
       "status": false,
-      "model": "large"
+      "api": "http://127.0.0.1:10885/upload/"
     },
     "sticker": {
       "status": false,
@@ -213,7 +213,7 @@ Api 后端请使用 https://github.com/LLMkira/MoeGoe
   "media": {
     "blip": {
       "status": false,
-      "model": "large"
+      "api": "http://127.0.0.1:10885/upload/"
     },
     "sticker": {
       "status": false,
@@ -225,8 +225,10 @@ Api 后端请使用 https://github.com/LLMkira/MoeGoe
 
 ### Blip
 
-Blip 即 `media` ，用于理解图片\贴纸，可选开启，开启后占用 2GB 内存。
-Blip 的`model` 可选 `base` `large` 两个模型，大模型有更多细节。
+请部署 https://github.com/LlmKira/BlipServer 用于理解图片。
+
+Blip 即 `media` ，用于理解图片\贴纸。
+Blip 的 model 可选 `base` `large` 两个模型，大模型有更多细节。
 
 ### Sticker(实验性)
 
