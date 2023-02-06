@@ -151,7 +151,7 @@ Api 后端请使用 https://github.com/LLMkira/MoeGoe
 
 ## 配置插件系统
 
-```json
+```json5
 {
   // ....
   "plugin": {
