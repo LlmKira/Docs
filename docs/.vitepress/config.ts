@@ -27,6 +27,8 @@ export default defineConfig({
             sidebar: {
                 '/guide/': sidebarGuide(),
                 '/models/': sidebarModels()
+                '/en/guide/': sidebarGuide(),
+                '/en/models/': sidebarModels()
             },
             editLink: {
                 pattern: 'https://github.com/LLMKira/Docs/edit/main/docs/:path',
