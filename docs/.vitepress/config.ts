@@ -70,6 +70,7 @@ function sidebarGuide() {
                 {text: 'Whats This', link: '/guide/whatskira'},
                 {text: 'Getting Started', link: '/guide/getting-started'},
                 {text: 'Configuration Service', link: '/guide/service'},
+                {text: 'Docker Compose', link: '/guide/docker'},
             ]
         },
         {
