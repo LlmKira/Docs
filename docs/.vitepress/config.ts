@@ -26,7 +26,7 @@ export default defineConfig({
             nav: nav(),
             sidebar: {
                 '/guide/': sidebarGuide(),
-                '/models/': sidebarModels()
+                '/models/': sidebarModels(),
                 '/en/guide/': sidebarGuide(),
                 '/en/models/': sidebarModels()
             },
