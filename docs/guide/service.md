@@ -9,7 +9,7 @@
 ```json
 {
   "redis": {
-    "host": "localhost",
+    "host": "localhost", ##docker部署填redis
     "port": 6379,
     "db": 0,
     "password": null
