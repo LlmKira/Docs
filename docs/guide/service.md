@@ -66,6 +66,17 @@
 }
 ```
 
+## 关于 Openai 的模型
+
+| models           | token limit | cost                                                          |
+|------------------|-------------|---------------------------------------------------------------|
+| code-davinci-002 | 8000        | During this initial limited beta period, Codex usage is free. |
+| code-cushman-001 | 2048        | During this initial limited beta period, Codex usage is free. |
+| text-davinci-003 | 4000        | $0.0200  /1K tokens                                           |
+| text-curie-001   | 2048        | $0.0020  /1K tokens                                           |
+| text-babbage-001 | 2048        | $0.0005  /1K tokens                                           |
+| text-ada-001     | 2048        | $0.0004  /1K tokens                                           |
+
 ## 配置语音
 
 先安装 ffmpeg 依赖库用于声音处理转换
