@@ -22,6 +22,7 @@
   },
   "backend": {
     "model": "text-davinci-003",
+    "similarity_init": true,
     "token_limit": 4000
   },
   "media": {
@@ -76,6 +77,20 @@
 | text-curie-001   | 2048        | $0.0020  /1K tokens                                           |
 | text-babbage-001 | 2048        | $0.0005  /1K tokens                                           |
 | text-ada-001     | 2048        | $0.0004  /1K tokens                                           |
+
+```json5
+{
+  // ....
+    "backend": {
+    "model": "text-davinci-003",
+    "similarity_init": true,
+    "token_limit": 4000
+  },
+}
+```
+
+如果你的服务器不足以使用 语义搜索模型 ，请配置 `similarity_init` 为 `false` 以使用余弦相似计算。
+
 
 ## 配置语音
 

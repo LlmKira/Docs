@@ -22,6 +22,7 @@ All service configurations are given here.
   },
   "backend": {
     "model": "text-davinci-003",
+    "similarity_init": true,
     "token_limit": 4000
   },
   "media": {
@@ -76,6 +77,19 @@ All service configurations are given here.
 | text-curie-001   | 2048        | $0.0020  /1K tokens                                           |
 | text-babbage-001 | 2048        | $0.0005  /1K tokens                                           |
 | text-ada-001     | 2048        | $0.0004  /1K tokens                                           |
+
+```json5
+{
+  // ....
+    "backend": {
+    "model": "text-davinci-003",
+    "similarity_init": true,
+    "token_limit": 4000
+  },
+}
+```
+
+If your server is not large enough to use the semantic search model, configure `similarity_init` to `false` to use the cosine similarity calculation.
 
 ## Configuring Voice Chat
 
