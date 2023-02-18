@@ -178,9 +178,12 @@ Then turn off privacy mode or raise the bot to administrator before it can be us
 chat - talk
 write - continue writing
 forgetme - reset memory
-reminder - Scene setting cancel overwrite with short text
+remind - Scene setting cancel overwrite with short text
 voice - voice support
 trigger - Admin initiates unsolicited responses
+trace - Admin activates automatic tracking of associated channels
+cross - whether the Admin starts a cross-response
+silent - Admin starts silent error reporting
 style - set the preferred word
 auto_adjust - automatic optimizer
 set_user_cold - set user cooldown
@@ -281,3 +284,12 @@ corresponding platform. See also the `Use` section for details.
 | Telegram   | 100       |      |
 | Api        | 103       |      |
 
+### 🌽 `/Config` File
+
+Our `llm-kira` dependency library is stored in the current package directory when there is no Redis support.
+
+The application itself is stored in Redis for robustness, except for `api_keys.json`, `service.json`
+and `assistants.json`.
+
+If you have `config.json`, the application will automatically initialise this file. And you can update the configuration
+to this file using the `/config` command.

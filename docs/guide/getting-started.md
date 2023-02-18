@@ -172,6 +172,9 @@ forgetme - 重置记忆
 remind - 场景设定 取消用短文本覆盖
 voice - 语音支持
 trigger - 管理员启动主动回复
+trace - 管理员启动关联频道自动追踪
+cross - 管理员启动是否交叉回复
+silent - 管理员启动报错沉默
 style - 设定偏好词
 auto_adjust - 自动优化器
 set_user_cold - 设置用户冷却时间
@@ -204,6 +207,7 @@ close - 关闭机器人
 change_head - 设定人设开关
 change_style - 设定风格开关
 help - 帮助
+
 ```
 
 上面的列表可以直接在 Telegram BotFather 中配置为命令列表。
@@ -270,3 +274,10 @@ close_group_white_mode - 关群组白名单
 | Telegram   | 100       |      |
 | Api        | 103       |      |
 
+### 🌽 `/Config` File
+
+我们的 `llm-kira` 依赖库在没有 Redis 支持的时候，存储在当前包目录下。
+
+程序本身除了 `api_keys.json` `service.json` `assistants.json` 全部存储在 Redis 中以获得稳健性。
+
+如果你有放 `config.json`，程序会自动初始化此文件。且使用 `/config` 命令可以更新配置到此文件。
