@@ -21,9 +21,15 @@
   "plugin": {
   },
   "backend": {
-    "model": "text-davinci-003",
-    "similarity_init": true,
-    "token_limit": 4000
+    "type": "openai",
+    "openai": {
+      "model": "text-davinci-003",
+      "token_limit": 4000
+    },
+    "chatgpt": {
+      "api": null,
+      "agree": false
+    }
   },
   "media": {
     "blip": {
@@ -81,10 +87,16 @@
 ```json5
 {
   // ....
-    "backend": {
-    "model": "text-davinci-003",
-    "similarity_init": true,
-    "token_limit": 4000
+  "backend": {
+    "type": "openai",
+    "openai": {
+      "model": "text-davinci-003",
+      "token_limit": 4000
+    },
+    "chatgpt": {
+      "api": null,
+      "agree": false
+    }
   },
 }
 ```
