@@ -94,7 +94,7 @@ All service configurations are given here.
       "token_limit": 4000
     },
     "chatgpt": {
-      "api": null,
+      "api": "http://someexp.com/",
       "agree": false
     }
   },

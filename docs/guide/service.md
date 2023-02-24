@@ -94,7 +94,7 @@
       "token_limit": 4000
     },
     "chatgpt": {
-      "api": null,
+      "api": "http://someexp.com/",
       "agree": false
     }
   },
