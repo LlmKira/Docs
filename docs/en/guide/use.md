@@ -1,5 +1,7 @@
 # Use
 
+Telegram currently supports all commands, some special commands such as `/trace` are not yet supported on the QQ platform.
+
 ## Chat
 
 🔭 Initiate a conversation using `/chat + sentence`, then **just reply** to talk.
@@ -10,9 +12,25 @@ Private chat messages or group messages within 48 hours will automatically be in
 
 Each use of `/forgetme` will reset Ai's memory bucket.
 
-## Continued
+## Write
 
 🥖 Use `/write` to do a continuation without contextual speculation.
+
+## Silent
+
+Administrator command. When an error is reported, is the error notified.
+
+## Cross-reply
+
+Admin switch whether to allow bots to reply to non-conversation initiators.
+
+## Trace
+
+Admin switch to use `/trace` to track posts on associated channels.
+
+## Strike up a conversation
+
+Administrator switch to use `/trigger` to automatically hit on users.
 
 ## Premise
 
