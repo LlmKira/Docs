@@ -18,12 +18,16 @@
     "status": false,
     "url": "http://127.0.0.1:7890"
   },
-  "plugin": {
-  },
   "backend": {
-    "model": "text-davinci-003",
-    "similarity_init": true,
-    "token_limit": 4000
+    "type": "chatgpt",
+    "openai": {
+      "model": "text-davinci-003",
+      "token_limit": 4000
+    },
+    "chatgpt": {
+      "model": "gpt-3.5-turbo",
+      "token_limit": 4000
+    }
   },
   "media": {
     "blip": {
@@ -69,6 +73,15 @@
 
 ## 关于 Openai 的模型
 
+#### ChatGpt
+
+| models             | token limit | cost                                                       |
+|--------------------|-------------|------------------------------------------------------------|
+| gpt-3.5-turbo      | 4095        | optimized for chat at 1/10th the cost of text-davinci-003. |
+| gpt-3.5-turbo-0301 | 4095        | optimized for chat at 1/10th the cost of text-davinci-003. |
+
+#### GPT3
+
 | models           | token limit | cost                                                          |
 |------------------|-------------|---------------------------------------------------------------|
 | code-davinci-002 | 8000        | During this initial limited beta period, Codex usage is free. |
@@ -81,16 +94,21 @@
 ```json5
 {
   // ....
-    "backend": {
-    "model": "text-davinci-003",
-    "similarity_init": true,
-    "token_limit": 4000
+  "backend": {
+    "type": "chatgpt",
+    "openai": {
+      "model": "text-davinci-003",
+      "token_limit": 4000
+    },
+    "chatgpt": {
+      "model": "gpt-3.5-turbo",
+      "token_limit": 4000
+    },
   },
 }
 ```
 
 如果你的服务器不足以使用 语义搜索模型 ，请配置 `similarity_init` 为 `false` 以使用余弦相似计算。
-
 
 ## 配置语音
 
@@ -174,34 +192,6 @@ Api 后端请使用 https://github.com/LLMkira/MoeGoe
   },
 }
 ```
-
-## 配置插件系统
-
-```json5
-{
-  // ....
-  "plugin": {
-    "search": [
-      "https://www.exp.com/search?word={}"
-    ]
-  }
-}
-```
-
-`search` 就是我们自带的一个搜索插件，引擎都是要自己填写的。
-
-放入 `plugin` 字段的插件才会被启用。
-**部分插件**
-
-| plugins   | desc              | value/server                                          | use                                   |
-|-----------|-------------------|-------------------------------------------------------|---------------------------------------|
-| `time`    | now time          | `""`,no need                                          | `明昨今天`....                            |
-| `week`    | week time         | `""`,no need                                          | `周几` .....                            |
-| `search`  | Web Search        | `["some.com?searchword={}"]`,must need                | `查询` `你知道` len<80 / end with`?`len<15 |
-| `duckgo`  | Web Search        | `""`,no need,but need `pip install duckduckgo_search` | `查询` `你知道` len<80 / end with`?`len<15 |
-| `details` | answer with steps | `""`,no need                                          | Ask for help `how to`                 |
-
-[所有插件](https://github.com/LLMKira/llm-kira)
 
 ## 配置安全过滤器
 
