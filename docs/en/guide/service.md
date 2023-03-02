@@ -108,9 +108,6 @@ All service configurations are given here.
 }
 ```
 
-If your server is not large enough to use the semantic search model, configure `similarity_init` to `false` to use the
-cosine similarity calculation.
-
 ## Configuring Voice Chat
 
 First install the ffmpeg dependency library for voice processing conversion
