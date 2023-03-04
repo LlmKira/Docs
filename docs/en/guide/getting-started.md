@@ -72,7 +72,7 @@ Fortunately, configuring the rest of the project's environment is easy, see the 
 
 ### Docker
 
-* [Docker](https://hub.docker.com/r/LLMKira/Openaibot)
+* [Docker](https://hub.docker.com/r/sudoskys/openaibot)
 
 Only stable versions of Docker images will be released.
 
