@@ -69,7 +69,7 @@ yarn global add pm2
 
 ### Docker
 
-* [Docker](https://hub.docker.com/r/LLMKira/Openaibot)
+* [Docker](https://hub.docker.com/r/sudoskys/openaibot)
 
 Docker 镜像在保证情况 stable 后才会发布更新。
 
