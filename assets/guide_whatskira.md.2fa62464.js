@@ -1,0 +1,15 @@
+import{_ as s,c as a,o as n,a as l}from"./app.20d1bb53.js";const F=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[{"level":2,"title":"项目组成示意","slug":"项目组成示意","link":"#项目组成示意","children":[]}],"relativePath":"guide/whatskira.md","lastUpdated":1678982670000}'),p={name:"guide/whatskira.md"},o=l(`<h2 id="项目组成示意" tabindex="-1">项目组成示意 <a class="header-anchor" href="#项目组成示意" aria-hidden="true">#</a></h2><div class="language-python"><button title="Copy Code" class="copy"></button><span class="lang">python</span><pre class="shiki material-theme-palenight"><code><span class="line"><span style="color:#A6ACCD;">IM </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">&quot;</span><span style="color:#C3E88D;">基于即时通讯的聊天平台</span><span style="color:#89DDFF;">&quot;</span></span>
+<span class="line"><span style="color:#A6ACCD;">Server </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">&quot;</span><span style="color:#C3E88D;">FastAPI 服务器</span><span style="color:#89DDFF;">&quot;</span></span>
+<span class="line"><span style="color:#A6ACCD;">Device </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">&quot;</span><span style="color:#C3E88D;">实机设备输入(比如音箱)</span><span style="color:#89DDFF;">&quot;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C792EA;">class</span><span style="color:#A6ACCD;"> </span><span style="color:#FFCB6B;">APP</span><span style="color:#89DDFF;">:</span></span>
+<span class="line"><span style="color:#A6ACCD;">    QQ</span><span style="color:#89DDFF;">:</span><span style="color:#A6ACCD;"> IM</span></span>
+<span class="line"><span style="color:#A6ACCD;">    Telegram</span><span style="color:#89DDFF;">:</span><span style="color:#A6ACCD;"> IM</span></span>
+<span class="line"><span style="color:#A6ACCD;">    BaseServerEvent</span><span style="color:#89DDFF;">:</span><span style="color:#A6ACCD;"> Server</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C792EA;">class</span><span style="color:#A6ACCD;"> </span><span style="color:#FFCB6B;">Assistants</span><span style="color:#89DDFF;">:</span></span>
+<span class="line"><span style="color:#A6ACCD;">    Voice</span><span style="color:#89DDFF;">:</span><span style="color:#A6ACCD;"> Device</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C792EA;">class</span><span style="color:#A6ACCD;"> </span><span style="color:#FFCB6B;">API</span><span style="color:#89DDFF;">:</span></span>
+<span class="line"><span style="color:#A6ACCD;">    AdvanceEventApi </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">&quot;</span><span style="color:#C3E88D;">给前端使用的，基于通用事件层的服务器</span><span style="color:#89DDFF;">&quot;</span></span>
+<span class="line"></span></code></pre></div>`,2),e=[o];function t(c,r,D,y,C,i){return n(),a("div",null,e)}const d=s(p,[["render",t]]);export{F as __pageData,d as default};
