@@ -67,6 +67,7 @@ rm docker-compose.yml
 cp docker-compose.yml.bak docker-compose.yml
 ````
 
+
 如果 BlipServer 和 Openaibot 部署在同一台服务器。
 
 ```shell
