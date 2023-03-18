@@ -2,7 +2,7 @@
 
 该教程的实时环境是 BlipServer MoeGoe Openaibot 部署在不同服务器上。
 
-首先，你需要预先安装好 `docker` 和 `docker-compose`
+首先，你需要预先安装好 `docker` 和 `docker-compose`:
 
 ````shell
 sudo apt  install docker.io -y
