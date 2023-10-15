@@ -49,7 +49,7 @@ export default defineConfig({
 function nav() {
     return [
         {text: 'Deploy Guide', link: '/guide/getting-started', activeMatch: '/guide/'},
-        {text: 'PluginDev Tutorials', link: '/plugin/start', activeMatch: '/plugin/'},
+        {text: 'PluginDev Tutorials', link: '/plugin/basic', activeMatch: '/plugin/'},
         {
             text: "About Repo",
             items: [
