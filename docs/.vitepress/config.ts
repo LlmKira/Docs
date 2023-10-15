@@ -26,15 +26,14 @@ export default defineConfig({
             nav: nav(),
             sidebar: {
                 '/guide/': sidebarGuide(),
-                '/models/': sidebarModels(),
+                '/plugin/': sidebarPlugin(),
                 '/en/guide/': sidebarGuide(),
-                '/en/models/': sidebarModels()
+                '/en/plugin/': sidebarPlugin()
             },
             editLink: {
                 pattern: 'https://github.com/LLMKira/Docs/edit/main/docs/:path',
                 text: 'Edit On GitHub'
             },
-
             socialLinks: [
                 {icon: 'github', link: 'https://github.com/LLMKira/Openaibot'}
             ],
@@ -50,7 +49,7 @@ export default defineConfig({
 function nav() {
     return [
         {text: 'Deploy Guide', link: '/guide/getting-started', activeMatch: '/guide/'},
-        {text: 'Dev Tutorials', link: '/models/start', activeMatch: '/models/'},
+        {text: 'PluginDev Tutorials', link: '/plugin/start', activeMatch: '/plugin/'},
         {
             text: "About Repo",
             items: [
@@ -66,32 +65,31 @@ function nav() {
 function sidebarGuide() {
     return [
         {
-            text: 'Deploy',
+            text: 'Deploy Guide',
             collapsed: false,
             items: [
-                {text: 'Whats This', link: '/guide/whatskira'},
-                {text: 'Getting Started', link: '/guide/getting-started'},
-                {text: 'Configuration Service', link: '/guide/service'},
-                {text: 'Docker Compose', link: '/guide/docker'},
+                {text: 'AboutProject', link: '/guide/getting-started'},
+                {text: 'Maintain&Backup', link: '/guide/service'},
             ]
         },
         {
-            text: 'User Guide',
+            text: 'Usage instructions',
             collapsed: false,
             items: [
-                {text: 'Chat With Bot', link: '/guide/use'},
-                {text: 'Command Use', link: '/guide/command'},
+                {text: 'Command', link: '/guide/command'},
             ]
         }
     ]
 }
 
-function sidebarModels() {
+function sidebarPlugin() {
     return [
         {
-            text: 'Models',
+            text: 'Create Plugin',
             items: [
-                {text: 'Api Intro', link: '/models/api_server'},
+                {text: 'Basic Dev', link: '/plugin/basic'},
+                // Use middleware
+                {text: 'Use middleware', link: '/plugin/middleware'},
             ]
         }
     ]

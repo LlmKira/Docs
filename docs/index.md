@@ -21,12 +21,12 @@ features:
     title: One-click 
     details: Well-established management system and Api quota control
   - icon: 📦
-    title: Modularity
-    details: WebApi,LLM-Kira | Convenient support for other projects
+    title: Chain Message
+    details: Message chain driven, reaches everywhere
   - icon: 🌻
     title: Multimedia support
     details: Robots can read pictures and have realistic conversations using their voices.
   - icon: 🫧
-    title: Extensibility, with Web Api
-    details: We offer a modular interface and Web Api support in general.
+    title: Plugin System
+    details: We offer a modular interface and Plugin Api support in general.
 ---

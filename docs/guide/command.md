@@ -1,46 +1,103 @@
-# 说明
+# 命令
 
-## 命令
+## Chat 命令
 
-限制类设置设定为 `1` 代表不生效。
+使用`/chat`命令后，可以与助手进行对话，根据设置，不一定启用插件（默认启用）。
 
-| 命令                                 | 作用                   | 额外                               |
-|------------------------------------|----------------------|----------------------------------|
-| `/set_user_cold`                   | 设置用户冷却时间             | 时间内不能发送         1 为无限制           |
-| `/set_group_cold`                  | 设置群组冷却时间             | 时间内不能发送            1 为无限制        |
-| `/set_token_limit`                 | 设置输出限制长度             | Api 的 4095 限制是输入+输出，如果超限，那么请调小输出 |
-| `/set_input_limit`                 | 设置输入限制长度             |                                  |
-| `/config`                          | 获取/备份 config.json 文件 | 发送文件                             |
-| `/add_block_group`      +id 绝对值    | 禁止                   | 直接生效         可跟多参数，空格分割          |
-| `/del_block_group`       +id 绝对值   | 解禁                   | 直接生效          可跟多参数，空格分割         |
-| `/add_block_user`     +id 绝对值      | 禁止                   | 直接生效           可跟多参数，空格分割        |
-| `/del_block_user`     +id 绝对值      | 解禁                   | 直接生效           可跟多参数，空格分割        |
-| `/add_white_group`     +id 绝对值     | 加入                   | 需要开启白名单模式生效       可跟多参数，空格分割     |
-| `/add_white_user`      +id 绝对值     | 加入                   | 需要开启白名单模式生效       可跟多参数，空格分割     |
-| `/del_white_group`     +id 绝对值     | 除名                   | 需要开启白名单模式生效        可跟多参数，空格分割    |
-| `/del_white_user`      +id 绝对值     | 除名                   | 需要开启白名单模式生效      可跟多参数，空格分割      |
-| `/update_detect`                   | 更新敏感词                |                                  |
-| `/open_user_white_mode`            | 开用户白名单               |                                  |
-| `/open_group_white_mode`           | 开群组白名单               |                                  |
-| `/close_user_white_mode`           | 关用户白名单               |                                  |
-| `/close_group_white_mode`          | 关群组白名单               |                                  |
-| `/open`                            | 开启机器人                |                                  |
-| `/close`                           | 关闭机器人                |                                  |
-| `/chat`                            | 对话                   | 每次/chat 发起对话，私聊则永久。              |
-| `/write`                           | 续写                   | 续写。                              |
-| `/see_api_key`                     | 现在几个 Api key         |                                  |
-| `/remind`                          | 人设                   | 固定的提示词。                          |
-| `/del_api_key`       +key          | 删除 Api key           | 可跟多参数，空格分割                       |
-| `/add_api_key`           +key      | 增加 Api key           | 可跟多参数，空格分割                       |
-| `/set_per_user_limit`              | 用户分配总额度              | 1 为无限制            按用户计量          |
-| `/set_per_hour_limit`              | 用户小时可用量              | 1 为无限制              按用户计量        |
-| `/reset_user_usage`+userID         | 重置用户分配额度             | 按用户计量          可跟多参数，空格分割        |
-| `/promote_user_limit`+userID+limit | 提升用户的额度              | 按用户计量  1 为默认        可跟多参数，空格分割   |
-| `/change_head`                     | 设定头                  | 用户再次设定会重置为空                      |
-| `/change_style`                    | 设定头                  | 用户再次设定会重置为空                      |
-| `/forgetme`                        | 忘记我                  |                                  |
-| `/voice`                           | VITS/AZURE  TTS      |                                  |
-| `/trigger`                         | 主动回复模式               | 全局设置或/只有管理组成员可以启动本群模式            |
-| `/style`                           | 风格化指定                | 全局设置或/用户设置                       |
-| `/auto_adjust`                     | 自动优化                 | owner                            |
+#### 示例
 
+```
+/chat Hi, how are you?
+/chat What is the weather like today?
+```
+
+## Task 命令
+
+`/task`命令用于创建指定启用 function call 的对话。
+
+#### 示例
+
+```
+/task Hi, how are you?
+/task What is the weather like today?
+```
+
+## Tool 命令
+
+`/tool`命令用于列出可用的工具列表。
+
+#### 示例
+
+```
+/tool
+```
+
+## Bind 命令
+
+`/bind`命令用于将可选平台绑定到助手。
+
+#### 示例
+
+```
+/bind https://rss.exp.com/atom/1
+```
+
+## Unbind 命令
+
+`/unbind`命令用于从助手中解绑已绑定的可选平台。
+
+#### 示例
+
+```
+/unbind xxx
+```
+
+## Clear 命令
+
+`/clear`命令用于删除自己的记录。
+
+#### 示例
+
+```
+/clear
+```
+
+## Rset_endpoint 命令
+
+`/rset_endpoint`命令用于自定义后端。
+
+#### 示例
+
+```
+/rset_endpoint http://custom-endpoint.com
+```
+
+## Rset_key 命令
+
+`/rset_key`命令用于设置OpenAI密钥。
+
+#### 示例
+
+```
+/rset_key YOUR-OPENAI-API-KEY
+```
+
+## Clear_rset 命令
+
+`/clear_rset`命令用于抹除自定义设置。
+
+#### 示例
+
+```
+/clear_rset
+```
+
+## Auth 命令
+
+`/auth`命令用于鉴权。
+
+#### 示例
+
+```
+/auth reloader_task_uuid
+```

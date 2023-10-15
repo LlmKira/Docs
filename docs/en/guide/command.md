@@ -1,45 +1,103 @@
-# Intro
+# Order
 
-## Command
+## Chat command
 
-Restricted class setting set to ``1`` means no effect.
+After using the `/chat` command, you can have a conversation with the assistant. Depending on the settings, the plug-in may not be enabled (enabled by default).
 
-| command                                   | function                           | extra                                                                                                                                       |
-|-------------------------------------------|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| `/set_user_cold`                          | set user cooldown time             | can not send within the time 1 is unlimited                                                                                                 |
-| `/set_group_cold`                         | Set group cooling time             | Cannot send within the time 1 is unlimited                                                                                                  |
-| `/set_token_limit`                        | Set the output limit length        | Api's 4095 limit is input + output, if it exceeds the limit, please reduce the output                                                       |
-| `/set_input_limit`                        | Set input limit length             |                                                                                                                                             |
-| `/config`                                 | get/backup config.json file        | send file                                                                                                                                   |
-| `/add_block_group` +id absolute value     | Prohibited                         | Effective directly Can be followed by multiple parameters, separated by spaces                                                              |
-| `/del_block_group` + absolute value of id | Unban                              | Effective directly Can be separated with multiple parameters and spaces                                                                     |
-| `/add_block_user` +Absolute value of id   | Forbidden                          | Effective directly Can be followed by multiple parameters, separated by spaces                                                              |
-| `/del_block_user` + absolute value of id  | Unban                              | Effective directly Can be separated with multiple parameters and spaces                                                                     |
-| `/add_white_group` +id absolute value     | Add                                | Need to enable the whitelist mode to take effect Can be separated with multiple parameters and spaces                                       |
-| `/add_white_user` + id absolute value     | Add                                | Need to enable the whitelist mode to take effect Can be separated with multiple parameters and spaces                                       |
-| `/del_white_group` +id absolute value     | Delisting                          | Need to enable the whitelist mode to take effect Can be separated with multiple parameters and spaces                                       |
-| `/del_white_user` + absolute value of id  | Delisting                          | Need to enable the whitelist mode to take effect Can be separated with multiple parameters and spaces                                       |
-| `/update_detect`                          | Update sensitive words             |                                                                                                                                             |
-| `/open_user_white_mode`                   | Open user whitelist                |                                                                                                                                             |
-| `/open_group_white_mode`                  | Open group whitelist               |                                                                                                                                             |
-| `/close_user_white_mode`                  | close user whitelist               |                                                                                                                                             |
-| `/close_group_white_mode`                 | close group whitelist              |                                                                                                                                             |
-| `/open`                                   | Open the robot                     |                                                                                                                                             |
-| `/close`                                  | close the robot                    |                                                                                                                                             |
-| `/chat`                                   | Conversation                       | Each time /chat starts over, forgetting the record. Replies cannot be indexed after 24 hours in the group, and private chats are permanent. |
-| `/write`                                  | continue writing                   | continue writing.                                                                                                                           |
-| `/see_api_key`                            | Several Api keys now               |                                                                                                                                             |
-| `/remind`                                 | Persona                            | Fixed reminder.                                                                                                                             |
-| `/del_api_key` +key                       | Delete Api key                     | Can follow multiple parameters, separated by spaces                                                                                         |
-| `/add_api_key` +key                       | Add Api key                        | Can follow multiple parameters, separated by spaces                                                                                         |
-| `/set_per_user_limit`                     | total user allocation limit        | 1 is unlimited per user                                                                                                                     |
-| `/set_per_hour_limit`                     | user hour usage                    | 1 is unlimited, per user                                                                                                                    |
-| `/reset_user_usage`+userID                | Reset user quota                   | Measured by user Can be followed by multiple parameters, separated by spaces                                                                |
-| `/promote_user_limit`+userID+limit        | Promote the user's limit           | Measured by user 1 is the default, can be followed by multiple parameters, separated by spaces                                              |
-| `/change_style`                           | setting prefer words               | Setting it again will reset to empty                                                                                                        |
-| `/change_head`                            | setting header                     | Setting it again will reset to empty                                                                                                        |
-| `/forgetme`                               | forget me                          |                                                                                                                                             |
-| `/voice`                                  | VITS/AZURE TTS                     |                                                                                                                                             |
-| `/trigger`                                | Active reply mode                  | Global settings or/only members of the management group can start this group mode                                                           |
-| `/style`                                  | style specification                | global setting or /user setting                                                                                                             |
-| `/auto_adjust`                            | Automatically optimize performance | owner                                                                                                                                       |
+#### Example
+
+```
+/chat Hi, how are you?
+/chat What is the weather like today?
+```
+
+## Task command
+
+The `/task` command is used to create a dialog that specifies that function call is enabled.
+
+#### Example
+
+```
+/task Hi, how are you?
+/task What is the weather like today?
+```
+
+## Tool command
+
+The `/tool` command is used to list the available tools.
+
+#### Example
+
+```
+/tool
+```
+
+## Bind command
+
+The `/bind` command is used to bind optional platforms to the assistant.
+
+#### Example
+
+```
+/bind https://rss.exp.com/atom/1
+```
+
+## Unbind command
+
+The `/unbind` command is used to unbind a bound optional platform from the assistant.
+
+#### Example
+
+```
+/unbindxxx
+```
+
+## Clear command
+
+The `/clear` command is used to delete your own records.
+
+#### Example
+
+```
+/clear
+```
+
+## Rset_endpoint command
+
+The `/rset_endpoint` command is used to customize the backend.
+
+#### Example
+
+```
+/rset_endpoint http://custom-endpoint.com
+```
+
+## Rset_key command
+
+The `/rset_key` command is used to set the OpenAI key.
+
+#### Example
+
+```
+/rset_key YOUR-OPENAI-API-KEY
+```
+
+## Clear_rset command
+
+The `/clear_rset` command is used to erase custom settings.
+
+#### Example
+
+```
+/clear_rset
+```
+
+## Auth Command
+
+The `/auth` command is used for authentication.
+
+#### Example
+
+```
+/auth reloader_task_uuid
+```
