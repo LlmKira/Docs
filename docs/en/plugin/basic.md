@@ -136,6 +136,7 @@ class BaseTool(ABC, BaseModel):
      keywords: List[str] # Register keywords
      pattern: Optional[re.Pattern] = None #Register regular pattern
      require_auth: bool = False #Whether the user is required to confirm execution
+     repeatable:bool = False
      def func_message(self, message_text):
          pass #Rule check, if it returns True then candidate it in the request
      def pre_check(self) -> Union[bool, str]:

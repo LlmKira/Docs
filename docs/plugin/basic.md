@@ -134,6 +134,7 @@ class BaseTool(ABC, BaseModel):
     keywords: List[str] # 注册关键词
     pattern: Optional[re.Pattern] = None # 注册正则
     require_auth: bool = False # 是否需要用户确认执行
+    repeatable:bool = False
     def func_message(self, message_text):
         pass # 规则检查，如果返回True则在请求中候选它
     def pre_check(self) -> Union[bool, str]:
