@@ -160,7 +160,12 @@ class BaseTool(ABC, BaseModel):
 
 构建关键词参数时请考虑国际化，且尽量避开公共关键词，禁止使用单字关键词。
 
-禁止使用 `__init__` 初始化。
+**禁止使用 `__init__` 初始化。**
+
+::: warning
+async def callback 
+函数暂时没有任何用。
+:::
 
 
 ### 注册元信息
@@ -258,13 +263,57 @@ _meta.reprocess_needed = False
 ```
 
 ## 注册 EntryPoint Group
+
 https://python-poetry.org/docs/pyproject/#plugins
+
+```toml
+[tool.poetry.plugins."llmkira.extra.plugin"]
+# The entrypoint name is the name of the plugin.
+# 前面和后面都要唯一，注册钩子的时候会用到
+bilisearch = "llmbot_plugin_bilisearch"
+```
+
+等号的后面是插件的包名，前面是唯一键（请确保不会与其他插件冲突）
+
+```toml
+[tool.poetry]
+name = "llmbot_plugin_bilisearch"
+```
+
+::: warning
+你必须注册 EntryPoint 才能被机器人启动程序检索到。
+:::
 
 ## 发布包
 
+`poetry publish` 发布包，或者使用 CI 自动发布。
 
 ### 包管理说明
 
+每次升级时，都要更新 `version` 字段。
 
 ### CI自动发布
 
+在 `.github/workflows/publish.yml` 文件中写入如下内容：
+
+```yml
+name: publish
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Publish python package
+        uses: JRubics/poetry-publish@v1.16
+        with:
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
+```
+
+仓库主界面右下角新建 `Release`

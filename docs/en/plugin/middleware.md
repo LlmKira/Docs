@@ -1,13 +1,13 @@
-# 中间件
+# Middleware
 
-## 计费组件
+## Usage
 
 ```python
 from llmkira.middleware.user import SubManager, UserInfo
 
 class EXP():
     """
-    用法示例
+    Example
     """
     @staticmethod
     async def llm_task(task, task_desc, raw_data):
@@ -32,20 +32,20 @@ class EXP():
 ```
 
 
-## 定时任务注册
+## Scheduled task registration
 
 
 ```python
 from llmkira.receiver.aps import SCHEDULER
 SCHEDULER.add_job(
-func=_send,  # 异步函数
+func=_send,  # ASYNC
 id=str(time.time()),
 trigger="date",
 replace_existing=True,
 run_date=datetime.datetime.now() + datetime.timedelta(minutes=_set.delay),
-args=[receiver, _set] # 参数传递
+args=[receiver, _set] # Arg List of func
 )
-# 启动
+# Start
 try:
     SCHEDULER.start()
 except Exception as e:
