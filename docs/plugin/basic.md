@@ -4,6 +4,10 @@
 
 OpenaiBot 为第三方插件提供了 OPENAPI 接口注册系统，本文将介绍如何建造一个插件。
 
+::: tip
+因为插件机制是参考 `Nonebot` 实现，故插件开发和 NoneBot Plugin 近似。
+:::
+
 ## 结构规范
 
 ```
