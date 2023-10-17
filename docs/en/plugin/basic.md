@@ -358,4 +358,4 @@ jobs:
            pypi_token: ${{ secrets.PYPI_TOKEN }}
 ```
 
-Create a new `Release` in the lower right corner of the Github repo page.
+Create a new `Release` in the bottom right corner of repo, create a new tag starting with `v`, and then enjoy it.

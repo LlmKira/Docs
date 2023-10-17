@@ -361,4 +361,4 @@ jobs:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
 ```
 
-仓库主界面右下角新建 `Release`
+仓库主界面右下角新建 `Release`, 新建 `v` 开头的标签，创建后即可触发自动发布。
