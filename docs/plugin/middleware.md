@@ -1,5 +1,10 @@
 # 中间件
 
+```python
+uid = f"{platform}:{user_id}"
+```
+
+
 ## 计费组件
 
 ```python
@@ -50,4 +55,13 @@ try:
     SCHEDULER.start()
 except Exception as e:
     pass
+```
+
+
+## ENV
+
+```python
+_env_dict = await EnvManager.from_uid(uid=_task.receiver.uid).get_env_list(name_list=_tool_obj.env_required)
+assert isinstance(_env_dict, dict), "env_dict must be dict"
+
 ```
