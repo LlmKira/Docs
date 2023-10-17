@@ -225,7 +225,7 @@ __plugin_meta__ = PluginMetadata(
      name=__plugin_name__,
      description="Search videos on bilibili.com(bilibili)",
      usage="bilibili search <keywords>",
-     openapi_version="20231013",
+     openapi_version=__openapi_version__,
      function={
          FuncPair(function=bilibili, tool=BiliBiliSearch)
      }
