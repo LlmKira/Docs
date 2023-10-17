@@ -83,6 +83,20 @@ bilibili-api-python = "^16.1.0"
 
 函数内插件名称**必须**由 `__plugin_name__` 参数引用。
 
+
+### 全局统一变量规范
+
+**下面的代码必须放进开头进行架构版本验证。**
+
+```python
+__plugin_name__ = "search_in_bilibili"
+__openapi_version__ = "20231017"
+from llmkira.sdk.func_calling import verify_openapi_version
+verify_openapi_version(__plugin_name__, __openapi_version__)
+
+```
+
+
 ### 函数类
 
 ```python
@@ -133,12 +147,26 @@ class BaseTool(ABC, BaseModel):
     """
     基础工具类，所有工具类都应该继承此类
     """
-    silent: bool = False # 创建函数的参数是否隐藏
-    function: Function # 函数类
-    keywords: List[str] # 注册关键词
-    pattern: Optional[re.Pattern] = None # 注册正则
-    require_auth: bool = False # 是否需要用户确认执行
-    repeatable:bool = False
+    silent: bool = Field(False, description="是否静默")
+    function: Function = Field(..., description="功能")
+    keywords: List[str] = Field([], description="关键词")
+    pattern: Optional[re.Pattern] = Field(None, description="正则匹配")
+    require_auth: bool = Field(False, description="是否需要授权")
+    repeatable: bool = Field(False, description="是否可重复使用")
+    deploy_child: Literal[0, 1] = Field(1, description="如果为0，终结于此链点，不再向下传递")
+    require_auth_kwargs: dict = {}
+    env_required: List[str] = Field([], description="环境变量要求")
+
+    def env_help_docs(self, empty_env: List[str]) -> str:
+        """
+        环境变量帮助文档
+        :param empty_env: 未被配置的环境变量列表
+        :return: 帮助文档/警告
+        """
+        assert isinstance(empty_env, list), "empty_env must be list"
+        return "You need to configure ENV to start use this tool"
+
+
     def func_message(self, message_text):
         pass # 规则检查，如果返回True则在请求中候选它
     def pre_check(self) -> Union[bool, str]:
