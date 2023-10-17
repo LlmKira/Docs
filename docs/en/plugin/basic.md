@@ -81,6 +81,18 @@ The plug-in is internally composed of function classes, tool classes, meta infor
 
 The plug-in name within the function must be referenced by the `__plugin_name__` parameter.
 
+### Global Uniform Variable Specification
+
+**The following code must be put in the beginning for architectural version validation.**
+
+```python
+__plugin_name__ = "search_in_bilibili"
+__openapi_version__ = "20231017"
+from llmkira.sdk.func_calling import verify_openapi_version
+verify_openapi_version(__plugin_name__, __openapi_version__)
+
+```
+
 ### Function class
 
 ```python
@@ -131,14 +143,28 @@ class BaseTool(ABC, BaseModel):
      """
      Basic tool class, all tool classes should inherit this class
      """
-     silent: bool = False # Whether the parameters of the created function are hidden
-     function: Function # Function class
-     keywords: List[str] # Register keywords
-     pattern: Optional[re.Pattern] = None #Register regular pattern
-     require_auth: bool = False #Whether the user is required to confirm execution
-     repeatable:bool = False
+     silent: bool = Field(False, description="SEND MSG OR NOT")
+     function: Function = Field(..., description="FUNC OBJ")
+     keywords: List[str] = Field([], description="KEYWORDS FOR MATCH")
+     pattern: Optional[re.Pattern] = Field(None, description="REGEX")
+     require_auth: bool = Field(False, description="NEED AUTH？")
+     repeatable: bool = Field(False, description="REUSABLE")
+     deploy_child: Literal[0, 1] = Field(1, description=IF 0,END CHAIN")
+     require_auth_kwargs: dict = {}
+     env_required: List[str] = Field([], description="NEED SOME ENV VAR")
+
+     def env_help_docs(self, empty_env: List[str]) -> str:
+         """
+         SHOW DOCS TO USER WHEN CALL FUNC
+         :param empty_env: 未被配置的环境变量列表
+         :return: 帮助文档/警告
+         """
+         assert isinstance(empty_env, list), "empty_env must be list"
+         return "You need to configure ENV to start use this tool"
+
      def func_message(self, message_text):
          pass #Rule check, if it returns True then candidate it in the request
+
      def pre_check(self) -> Union[bool, str]:
          """
          Pre-check, if it is not qualified, it returns False, if it is qualified, it returns True.
