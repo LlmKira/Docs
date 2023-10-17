@@ -181,6 +181,7 @@ class BaseTool(ABC, BaseModel):
         """
         运行
         """
+        env = kwargs.get("env", {})
         pass
     async def failed(self, platform, task, receiver, reason):
         """
@@ -200,6 +201,17 @@ async def callback
 函数暂时没有任何用。
 :::
 
+#### Env 环境交互
+
+设置 `env_required` 属性。
+
+```python
+async def run(self, task, receiver, arg, **kwargs):
+    """
+    run
+    """
+    env = kwargs.get("env", {})
+```
 
 ### 注册元信息
 

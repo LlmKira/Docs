@@ -177,6 +177,7 @@ class BaseTool(ABC, BaseModel):
          """
          run
          """
+         env = kwargs.get("env", {})
          pass
      async def failed(self, platform, task, receiver, reason):
          """
@@ -195,6 +196,18 @@ Please consider internationalization when constructing keyword parameters, and t
 async def callback
 The function is of no use at the moment.
 :::
+
+#### Env variable
+
+Set `env_required`
+
+```python
+async def run(self, task, receiver, arg, **kwargs):
+    """
+    run
+    """
+    env = kwargs.get("env", {})
+```
 
 
 ### Register meta information
