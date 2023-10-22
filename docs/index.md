@@ -14,7 +14,7 @@ hero:
       link: /guide/getting-started
     - theme: brand
       text: 开发指南
-      link: /plugin/basic
+      link: /dev/basic
     - theme: alt
       text: View on GitHub
       link: https://github.com/LLMKira/Openaibot
