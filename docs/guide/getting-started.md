@@ -36,7 +36,7 @@ docker-compose -f docker-compose.yml -p llmbot up -d llmbot
 
 ## 🥽 手动安装
 
-- 使用 `pip uninstall llm-kira` 卸载旧内核。
+- 使用 `pip uninstall llm-kira` 卸载旧内核。(如果有)
 
 - 使用 `pip uninstall llmkira` 卸载插件开发工具。(否则会造成冲突)
 
