@@ -7,7 +7,7 @@ export default defineConfig({
         lang: 'zh-CN',
         title: 'Openai Kira Org',
         base: "/Docs/",
-        description: 'Kira Kira -- GPT related models.',
+        description: 'Kira Kira Openaibot.',
 
         lastUpdated: true,
         cleanUrls: true,
@@ -42,17 +42,17 @@ export default defineConfig({
                 {icon: 'github', link: 'https://github.com/LLMKira/Openaibot'}
             ],
             footer: {
-                message: 'Released under the GPL-later.',
-                copyright: 'Copyright © 2023-present Kira'
+                message: 'Released under the GFDL License.',
+                copyright: 'Copyright © 2022-present Kira'
             },
             lastUpdated: {
                 text: 'Updated at',
                 formatOptions: {
-                  dateStyle: 'full',
-                  timeStyle: 'medium'
+                    dateStyle: 'full',
+                    timeStyle: 'medium'
                 },
             },
-            outline: [ 1, 3 ],
+            outline: [1, 3],
         },
     }
 )
