@@ -5,28 +5,34 @@ title: Openai Docs
 editLink: true
 
 hero:
-  name: Openai LLM
-  text: Tutorials and Development guides.
-  tagline: LLM-based ChatBot family of frameworks
+  name: Openaibot
+  text: Development guides and tutorials.
+  tagline: LLM-based Chain Message ChatBot framework
   actions:
     - theme: brand
-      text: Get Started
-      link: /guide/getting-started
+      text: Deploy Guide
+      link: /en/guide/getting-started
+    - theme: brand
+      text: PluginDev Guide
+      link: /en/plugin/basic
     - theme: alt
       text: View on GitHub
       link: https://github.com/LLMKira/Openaibot
-
+    - theme: alt
+      text: Join Discord
+      link: https://discord.com/invite/6QHNdwhdE5
+    
 features:
   - icon: 🛠️
-    title: One-click 
-    details: Well-established management system and Api quota control
+    title: Human Design
+    details: Docker images for one-click deployment. Automatic start configured services.
   - icon: 📦
-    title: Chain Message
-    details: Message chain driven, reaches everywhere
+    title: Chained Messaging
+    details: Self-driven multi-round conversations with automated tooling for problem solving.
   - icon: 🌻
-    title: Multimedia support
-    details: Robots can read pictures and have realistic conversations using their voices.
-  - icon: 🫧
     title: Plugin System
-    details: We offer a modular interface and Plugin Api support in general.
+    details: Virtual ENV Shell, file accessibility, decoupled messaging logic, man-in-the-loop
+  - icon: 🫧
+    title: Multi-platform
+    details: Slack/Discord/Telegram/Kook, Supports per-user key configuration
 ---

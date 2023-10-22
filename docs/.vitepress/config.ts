@@ -13,9 +13,10 @@ export default defineConfig({
         locales: {
             root: {
                 label: 'Chinese',
-                lang: 'zh'
+                lang: 'zh',
+                link: '/'
             },
-            zh: {
+            en: {
                 label: 'English',
                 lang: 'en',
                 link: '/en/'
@@ -24,11 +25,13 @@ export default defineConfig({
         head: [['meta', {name: 'theme-color', content: '#3c8772'}]],
         themeConfig: {
             nav: nav(),
+            siteTitle: 'LLMKira Docs',
+            logo: '/logo.svg',
             sidebar: {
                 '/guide/': sidebarGuide(),
-                '/plugin/': sidebarPlugin(),
-                '/en/guide/': sidebarGuide(),
-                '/en/plugin/': sidebarPlugin()
+                '/dev/': sidebarDev(),
+                '/en/guide/': sidebarGuideEn(),
+                '/en/dev/': sidebarDevEn()
             },
             editLink: {
                 pattern: 'https://github.com/LLMKira/Docs/edit/main/docs/:path',
@@ -41,6 +44,14 @@ export default defineConfig({
                 message: 'Released under the GPL-later.',
                 copyright: 'Copyright © 2023-present Kira'
             },
+            lastUpdated: {
+                text: 'Updated at',
+                formatOptions: {
+                  dateStyle: 'full',
+                  timeStyle: 'medium'
+                },
+            },
+            outline: [ 1, 3 ],
         },
     }
 )
@@ -49,7 +60,7 @@ export default defineConfig({
 function nav() {
     return [
         {text: 'Deploy Guide', link: '/guide/getting-started', activeMatch: '/guide/'},
-        {text: 'PluginDev Tutorials', link: '/plugin/basic', activeMatch: '/plugin/'},
+        {text: 'Dev Tutorials', link: '/dev/basic', activeMatch: '/dev/'},
         {
             text: "About Repo",
             items: [
@@ -65,31 +76,80 @@ function nav() {
 function sidebarGuide() {
     return [
         {
+            text: '部署指南',
+            collapsed: false,
+            items: [
+                {text: '开始部署', link: '/guide/getting-started'},
+                {text: '子服务部件', link: '/guide/service'},
+                {text: '维护服务', link: '/guide/maintain'},
+            ]
+        },
+        {
+            text: '使用指南',
+            collapsed: false,
+            items: [
+                {text: '交互命令', link: '/guide/command'},
+            ]
+        }
+    ]
+}
+
+
+function sidebarDev() {
+    return [
+        {
+            text: '插件开发指南',
+            items: [
+                {text: '快速开发', link: '/dev/basic'},
+                {text: '中间件使用', link: '/dev/middleware'},
+            ]
+        },
+        {
+            text: '平台开发指南',
+            items: [
+                {text: '架构介绍', link: '/dev/arch'},
+                {text: '收发端', link: '/dev/client'},
+            ]
+        }
+    ]
+}
+
+function sidebarGuideEn() {
+    return [
+        {
             text: 'Deploy Guide',
             collapsed: false,
             items: [
-                {text: 'AboutProject', link: '/guide/getting-started'},
-                {text: 'Maintain&Backup', link: '/guide/service'},
+                {text: 'Deploy', link: '/en/guide/getting-started'},
+                {text: 'Component', link: '/en/guide/service'},
+                {text: 'Maintain', link: '/en/guide/maintain'},
             ]
         },
         {
             text: 'Usage instructions',
             collapsed: false,
             items: [
-                {text: 'Command', link: '/guide/command'},
+                {text: 'Command', link: '/en/guide/command'},
             ]
         }
     ]
 }
 
-function sidebarPlugin() {
+function sidebarDevEn() {
     return [
         {
-            text: 'Create Plugin',
+            text: 'Plugin System',
             items: [
-                {text: 'Basic Dev', link: '/plugin/basic'},
+                {text: 'Fast Dev', link: '/en/dev/basic'},
                 // Use middleware
-                {text: 'Use middleware', link: '/plugin/middleware'},
+                {text: 'Middleware', link: '/en/dev/middleware'},
+            ]
+        },
+        {
+            text: 'Platform Dev',
+            items: [
+                {text: 'Arch', link: '/en/dev/arch'},
+                {text: 'Client', link: '/en/dev/client'},
             ]
         }
     ]

@@ -1,2 +1,2 @@
 
-Deploy https://github.com/LlmKira/Openaibot
+## 部署
