@@ -2,6 +2,7 @@
 import {createRequire} from 'module'
 import {defineConfig} from 'vitepress'
 
+// @ts-ignore
 export default defineConfig({
         lang: 'zh-CN',
         title: 'Openai Kira Org',
@@ -24,8 +25,8 @@ export default defineConfig({
         },
         head: [['meta', {name: 'theme-color', content: '#3c8772'}]],
         themeConfig: {
-            nav: nav(),
-            siteTitle: 'LLMKira Docs',
+            nav: navBar(),
+            siteTitle: 'LLMKira',
             logo: 'https://avatars.githubusercontent.com/u/124290462?s=200&v=4',
             sidebar: {
                 '/guide/': sidebarGuide(),
@@ -57,7 +58,7 @@ export default defineConfig({
 )
 
 
-function nav() {
+function navBar() {
     return [
         {text: 'Deploy Guide', link: '/guide/getting-started', activeMatch: '/guide/'},
         {text: 'Dev Tutorials', link: '/dev/basic', activeMatch: '/dev/'},

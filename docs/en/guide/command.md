@@ -1,103 +1,55 @@
-# Order
+# Command Guide
 
-## Chat command
+## All commands
 
-After using the `/chat` command, you can have a conversation with the assistant. Depending on the settings, the plug-in may not be enabled (enabled by default).
-
-#### Example
-
-```
-/chat Hi, how are you?
-/chat What is the weather like today?
-```
-
-## Task command
-
-The `/task` command is used to create a dialog that specifies that function call is enabled.
-
-#### Example
-
-```
-/task Hi, how are you?
-/task What is the weather like today?
+```shell
+help - help
+chat - chat
+task - task
+ask - answer
+tool - list of tools
+bind - Bind rss
+unbind - Unbind rss
+clear - delete own records
+set_endpoint - Custom backend
+clear_endpoint - Erase custom settings
+auth - man-in-loop authentication
+env - virtual env shell
 ```
 
-## Tool command
+::: tip Suggestions
+In some platforms, such as Slack platform, `auth` `chat` `task` `ask` commands need to start with `!`.
 
-The `/tool` command is used to list the available tools.
+Some platforms additionally support the `@Bot` method, such as the Slack platform. The `@Bot` command is equivalent to
+the `chat` command.
+:::
 
-#### Example
+### 🥽 Diff of modes
 
-```
-/tool
-```
-
-## Bind command
-
-The `/bind` command is used to bind optional platforms to the assistant.
-
-#### Example
-
-```
-/bind https://rss.exp.com/atom/1
+```ini
+chat - chat
+task - task
+ask - just answer
 ```
 
-## Unbind command
+Among them, `chat` mode is the default mode, `task` mode enables function response, and `ask` mode disables function
+response.
 
-The `/unbind` command is used to unbind a bound optional platform from the assistant.
+### 🧁 ENV
 
-#### Example
-
-```
-/unbindxxx
-```
-
-## Clear command
-
-The `/clear` command is used to delete your own records.
-
-#### Example
-
-```
-/clear
+```shell
+env - virtual environment settings
 ```
 
-## Rset_endpoint command
+This command provides **an interactive env between the plugin and the user**. The user can submit the constants
+required by the plugin through this command.
 
-The `/rset_endpoint` command is used to customize the backend.
+For example `/env VAR=551;VAR2=asdasd;VAR3="1231"`
 
-#### Example
+All input will be formatted and upper.
 
-```
-/rset_endpoint http://custom-endpoint.com
-```
+### 🍭 Binding and unbinding
 
-## Rset_key command
+This command is just a subscription command, used to subscribe to RSS messages.
 
-The `/rset_key` command is used to set the OpenAI key.
-
-#### Example
-
-```
-/rset_key YOUR-OPENAI-API-KEY
-```
-
-## Clear_rset command
-
-The `/clear_rset` command is used to erase custom settings.
-
-#### Example
-
-```
-/clear_rset
-```
-
-## Auth Command
-
-The `/auth` command is used for authentication.
-
-#### Example
-
-```
-/auth reloader_task_uuid
-```
+In order to reflect the cross-platform characteristics, it **actually has no effect**.
