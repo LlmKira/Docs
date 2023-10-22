@@ -198,16 +198,38 @@ DISCORD_BOT_PROXY_ADDRESS = socks5://
 
 申请 Discord Bot 请移步 [官方平台](https://discord.com/developers/applications)
 
-点开 `oauth2/url-generator`，选中权限组 `bot`，复制链接到浏览器打开，选择您要添加机器人的服务器，然后点击 `授权`。
+点开 `oauth2/url-generator`，选中权限组 `bot`
+您需要勾选的权限如下：
+
+```ini
+`Send Messages`
+`Read Message History`
+`Send Messages in Theads`
+`Attach Files`
+`Mentions Everyone`
+`Use Slash Command`
+```
+
+生成，复制链接到浏览器打开，选择您要添加机器人的服务器，然后点击 `授权`。
+
+#### 特权意象
+
+打开 Bot 选项卡，打开 `Message Content Intent`
+
+参加 100 个服务器以上的机器人需要批准，否则不需要。
+
+```ini
+my_intents = (
+             Intents.GUILDS |
+             Intents.GUILD_MESSAGES |
+             Intents.DM_MESSAGES |
+             Intents.MESSAGE_CONTENT
+             )
+```
 
 ::: warning 提示
-
-目前 Discord Bot 需要 Intent 特权意象。目前我们选中了全部特权，但是我们不会使用您的数据。由于不清楚究竟使用哪些 Intent
-，如果有问题，请提交修改建议。
-
-详细信息见 [官方文档](https://discord.com/developers/docs/topics/gateway#privileged-intents) 和
-博客文章 [Discord](https://support.discord.com/hc/zh-tw/articles/360040720412#privileged-intent-whitelisting)
-
+一旦您的机器人达到 100 台或更多服务器，就需要验证和批准。
+[Notice](https://support.discord.com/hc/en-us/articles/360040720412)
 :::
 
 ### 🍗 Slack

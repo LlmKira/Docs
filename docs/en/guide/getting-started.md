@@ -204,19 +204,28 @@ DISCORD_BOT_PROXY_ADDRESS = socks5://
 
 To apply for Discord Bot, please go to [Official Platform](https://discord.com/developers/applications)
 
-Click on `oauth2/url-generator`, select the permission group `bot`, copy the link to the browser and open it, select the
+Click on `OAuth2 URL Generator` sheet, select the permission group `bot`, then select `Send Messages`
+and `Read Message History`,`Send Messages in Theads` `Attach Files` `Mentions Everyone` `Use Slash Command`
+
+Copy the link to the browser and open it, select the
 server where you want to add the robot, and then click `Authorize`.
 
+#### Intents Apply
+
+Open the bot page,Turn on `Message Content Intent`
+
+```ini
+my_intents = (
+             Intents.GUILDS |
+             Intents.GUILD_MESSAGES |
+             Intents.DM_MESSAGES |
+             Intents.MESSAGE_CONTENT
+             )
+```
+
 ::: warning Here!
-
-Discord Bot currently requires the Intent privileged image. Currently we have all privileges checked, but we will not
-use your data.
-
-Since i am not clear exactly which Intents to use
-, if you have any idea, please submit suggestions for modification.
-
-For details, see [Official Documentation](https://discord.com/developers/docs/topics/gateway#privileged-intents) and
-Blog article [Discord](https://support.discord.com/hc/zh-tw/articles/360040720412#privileged-intent-whitelisting)
+Once your bot reaches 100 or more servers, this will require verification and approval.
+[Notice](https://support.discord.com/hc/en-us/articles/360040720412)
 :::
 
 ### 🍗 Slack
