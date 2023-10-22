@@ -26,7 +26,7 @@ export default defineConfig({
         themeConfig: {
             nav: nav(),
             siteTitle: 'LLMKira Docs',
-            logo: '/logo.svg',
+            logo: 'https://avatars.githubusercontent.com/u/124290462?s=200&v=4',
             sidebar: {
                 '/guide/': sidebarGuide(),
                 '/dev/': sidebarDev(),
