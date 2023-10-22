@@ -38,7 +38,9 @@ dependencies.
 
 ## 🥽 Manual installation
 
-- Use `pip uninstall llmkira` to uninstall the old kernel.
+- Use `pip uninstall llm-kira` to uninstall the old kernel.
+
+- Use `pip uninstall llmkira` to uninstall plugin dev tools.(or will cause conflict)
 
 - Make sure your Python version is 3.9 or above.
 
@@ -208,7 +210,7 @@ server where you want to add the robot, and then click `Authorize`.
 ::: warning Here!
 
 Discord Bot currently requires the Intent privileged image. Currently we have all privileges checked, but we will not
-use your data. 
+use your data.
 
 Since i am not clear exactly which Intents to use
 , if you have any idea, please submit suggestions for modification.
