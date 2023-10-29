@@ -407,7 +407,7 @@ After querying, your Genshin Impact account is: 123456789
 ```
 
 ```
-file message
+<file message>
 ```
 
 #### 📕 Custom communication mode
