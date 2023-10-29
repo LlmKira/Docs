@@ -26,22 +26,22 @@ Private Chat:
 ## Command table
 
 ```shell
-help - help
+clear - erase chat history
+help - show docs
 chat - chat
-task - task
-ask - question and answer
-tool - list of tools
-bind - Bind optional platforms
-unbind - Unbind optional platforms
-clear - delete own records
-set_endpoint - Custom backend
-clear_endpoint - Erase custom settings
-auth - authentication
-env - virtual environment settings
+task - chat with function_enable
+ask - chat with function_disable
+tool - list all functions
+set_endpoint - set private key and endpoint
+clear_endpoint - erase private key and endpoint
+auth - auth a function
+env - env for function
 token - bind token
-token_clear - clear token
-func_ban - disable function
-func_unban - unban function
+token_clear - clear token binding
+func_ban - ban a function
+func_unban - unban a function
+bind - Bind rss platforms
+unbind - Unbind rss platforms
 
 ```
 

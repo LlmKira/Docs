@@ -26,22 +26,22 @@ Private Chat:
 ## 命令表
 
 ```shell
-help - 帮助
+clear - 删除聊天记录
+help - 显示文档
 chat - 聊天
-task - 任务
-ask - 问答
-tool - 工具列表
-bind - 绑定可选平台
-unbind - 解绑可选平台
-clear - 删除自己的记录
-set_endpoint - 自定义后端
-clear_endpoint - 抹除自定义设置
-auth - 鉴权
-env - 虚拟环境设置
-token - 绑定 token
-token_clear - 清除 token
-func_ban - 禁用函数
-func_unban - 解禁函数
+task - 启用函数的聊天
+ask - 禁止函数的聊天
+tool - 列出所有函数
+set_endpoint - 设置私有 key 和 endpoint
+clear_endpoint - 清除私有 key 和 endpoint
+auth - 授权一个函数
+env - 函数环境变量
+token - 绑定令牌
+token_clear - 清除令牌绑定
+func_ban - 禁用一个函数
+func_unban - 解禁一个函数
+bind - 绑定消息源
+unbind - 解绑消息源
 
 ```
 
