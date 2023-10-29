@@ -297,6 +297,23 @@ __plugin_meta__ = PluginMetadata(
 OpenAPI 组件会设定哪些版本的插件可以被加载，如果您的插件版本过低，会报错，届时您将收到用户的 Issue。
 :::
 
+### 🥥 前验触发器
+
+使用这个装饰器来阻止或通过特定符合条件的响应。
+
+```jupyterpython
+@resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
+async def on_chat_message(message: str, uid: str, **kwargs):
+    """
+    :param message: RawMessage
+    :return:
+    """
+    if "<hello>" in message:
+        return True
+```
+
+函数返回 `True` 则说明需要前置动作。
+
 ### 🔨 错误禁用
 
 使用这个装饰器来监测行动函数的错误。

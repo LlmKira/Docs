@@ -43,7 +43,8 @@ Because pypi does not allow uploading large files, the plug-in packaging folder 
 
 ### 🔗 Prepare
 
-First make sure you have installed a code editor and Python environment (version greater than 3.9). In the Shell console or CMD command line, enter `python -v` to check or view the version.
+First make sure you have installed a code editor and Python environment (version greater than 3.9). In the Shell console
+or CMD command line, enter `python -v` to check or view the version.
 
 #### Install Tools
 
@@ -319,6 +320,23 @@ may need to synchronize this parameter to support the new interface.
 The OpenAPI component will set which versions of the plugin can be loaded. If your plugin version is too low, an error
 will be reported, and you will receive an Issue from the user.
 :::
+
+### 🥥 A priori trigger
+
+Use this decorator to block or pass responses that meet certain conditions.
+
+```jupyterpython
+@resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
+async def on_chat_message(message: str, uid: str, **kwargs):
+    """
+    :param message: RawMessage
+    :return:
+    """
+    if "<hello>" in message:
+        return True
+```
+
+If the function returns `True`, it indicates that a pre-action is required.
 
 ### 🔨 Error disabled
 

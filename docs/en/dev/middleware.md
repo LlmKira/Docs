@@ -6,95 +6,78 @@ uid = f"{platform}:{user_id}"
 
 ## 🔩 Media type converter
 
-::: danger
-Waiting rewrite!
-:::
-
 Used to convert media types and inject file objects. Used in Tts scenarios, text-to-file sending scenarios.
 
 ```python
-from typing import List
+@resign_transfer()
+class DefaultMessageBuilder(Builder):
+    sign = TransferMata(
+        platform=re.compile(r".*"),  # 匹配所有
+        plugin_name="default",
+        agent="receiver",
+        priority=0
+    )
 
-from llmkira.sdk.schema import File
-from llmkira.transducer import resign_transfer, Builder, Parser
-
-__receiver_name__ = "discord"
-
-
-@resign_transfer(agent_name=__receiver_name__)
-class Builder(Builder):
-     def build(self, message, *args) -> (bool, List[File]):
-         """
-         Located on the receiver platform, it only hooks the normal reply of LLM, that is, the reply function.
-         :param message: Single universal message (RawMessage)
-         :param args: other parameters
-         :return: Whether to give up sending text, list of files to be sent (RawMessage.upload)
-         """
-         return False, []
+    async def pipe(self, arg) -> Any:
+        return arg
 
 
-@resign_transfer(agent_name=__receiver_name__)
-class Parser(Parser):
-     def parse(self, message, file: List[File], *args) -> (list, List[File]):
-         """
-         Receives the **raw** message from the sender platform and returns the file.
-         It should be noted that the message here is the original message, not the general message type after our conversion.
-         :param message: a single original message
-         :param file: file list
-         :param args: other parameters
-         :return: Return **appended** message list, return file list,
-         """
-         return [], file
+@resign_transfer()
+class DefaultMessageParser(Parser):
+    sign = TransferMata(
+        platform=re.compile(r".*"),  # 匹配所有
+        plugin_name="default",
+        agent="sender",
+        priority=0
+    )
 
-
+    async def pipe(self, arg) -> Any:
+        return arg
 ````
 
--Usage scenarios of Builder
-
-```python
-# parser
-_transfer = TransferManager().receiver_builder(agent_name=__receiver__)
-just_file, file_list = _transfer().build(message=item)
-```
-
-- Parser usage scenarios
-
-```python
-# parser
-_transfer = TransferManager().sender_parser(agent_name=__sender__)
-deliver_back_message, _file = _transfer().parse(message=message, file=_file)
-```
 
 ## 🍟 Billing component
 
 ```python
-from llmkira.middleware.user import SubManager, UserInfo
+from loguru import logger
+from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed
+
+from llmkira.extra.user import CostControl, UserCost
+from llmkira.middleware.llm_provider import GetAuthDriver
+from llmkira.sdk.endpoint import openai
+from llmkira.sdk.schema import Message
+from llmkira.task import TaskHeader
 
 
-class EXP():
-     """
-     Usage examples
-     """
-
-     @staticmethod
-     async def llm_task(task, task_desc, raw_data):
-         _submanager = SubManager(user_id=f"{task.sender.platform}:{task.sender.user_id}")
-         driver = _submanager.llm_driver # The sender bears the cost of the recipient
-         model_name = os.getenv("OPENAI_API_MODEL", "gpt-3.5-turbo-0613")
-         endpoint = openai.Openai(
-             config=driver,
-             model=model_name,
-             messages=Message.create_task_message_list(
-                 task_desc=task_desc,
-                 refer=raw_data
-             ),
-         )
-         # Call Openai
-         result = await endpoint.create()
-         await _submanager.add_cost(
-             cost=UserInfo.Cost(token_usage=result.usage.total_tokens, token_uuid=driver.uuid, model_name=model_name)
-         )
-         return result.default_message.content
+@retry(stop=(stop_after_attempt(3) | stop_after_delay(10)), wait=wait_fixed(2), reraise=True)
+async def llm_task(plugin_name, task: TaskHeader, task_desc: str, raw_data: str):
+    logger.info("llm_tool:{}".format(task_desc))
+    auth_client = GetAuthDriver(uid=task.sender.uid)
+    driver = await auth_client.get()
+    endpoint = openai.Openai(
+        config=driver,
+        model=driver.model,
+        temperature=0.1,
+        messages=Message.create_short_task(
+            task_desc=task_desc,
+            refer=raw_data,
+        ),
+    )
+    # 调用Openai
+    result = await endpoint.create()
+    # 记录消耗
+    await CostControl.add_cost(
+        cost=UserCost.create_from_function(
+            uid=task.sender.uid,
+            request_id=result.id,
+            cost_by=plugin_name,
+            token_usage=result.usage.total_tokens,
+            token_uuid=driver.uuid,
+            model_name=driver.model
+        )
+    )
+    assert result.default_message.content, "llm_task.py:llm_task:content is None"
+    return result.default_message.content
 
 ```
 
