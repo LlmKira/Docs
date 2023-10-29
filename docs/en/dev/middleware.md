@@ -6,6 +6,9 @@ uid = f"{platform}:{user_id}"
 
 ## 🔩 Media type converter
 
+::: danger
+Waiting rewrite!
+:::
 
 Used to convert media types and inject file objects. Used in Tts scenarios, text-to-file sending scenarios.
 
