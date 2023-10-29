@@ -1,20 +1,48 @@
 # Command Guide
 
-## All commands
+## Intro
+
+```text
+     /help-HELP YOURSELF
+     /chat - Chat with me :)
+     /task-Function enable
+     /ask - Chat with func_disable
+     /tool-Tool list
+     /clear - Clear Chat
+     /auth - Auth a task
+Private Chat:
+     /bind-RSS
+     /unbind-RSS
+     /set_endpoint - <apikey>#<endpoint>
+     /clear_endpoint - Clear endpoint and key
+     /env - configuration variables, use as shell
+     /token - bind your token
+     /token_clear - clear your token
+     /func_ban - ban function
+     /func_unban - unban function
+```
+
+
+## Command table
 
 ```shell
 help - help
 chat - chat
 task - task
-ask - answer
+ask - question and answer
 tool - list of tools
-bind - Bind rss
-unbind - Unbind rss
+bind - Bind optional platforms
+unbind - Unbind optional platforms
 clear - delete own records
 set_endpoint - Custom backend
 clear_endpoint - Erase custom settings
-auth - man-in-loop authentication
-env - virtual env shell
+auth - authentication
+env - virtual environment settings
+token - bind token
+token_clear - clear token
+func_ban - disable function
+func_unban - unban function
+
 ```
 
 ::: tip Suggestions

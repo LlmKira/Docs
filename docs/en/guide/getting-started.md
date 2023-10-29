@@ -48,14 +48,14 @@ curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | b
 ```shell
 git clone https://github.com/LlmKira/Openaibot.git
 cd Openaibot
-cp .env.exp .env&&nano .env
+cp .env.exp .env && nano .env
 docker-compose -f docker-compose.yml up -d
 
 ```
 
 ### 🍔 Shell
 
-To manually start using Pm2, you need to install `redis`, `rabbitmq`, `mongodb` by yourself.
+To manually start using Pm2
 
 ```shell
 git clone https://github.com/LlmKira/Openaibot.git
@@ -63,7 +63,7 @@ cd Openaibot
 python3 -m pip install -r requirements.txt
 cp .env.exp .env && nano .env
 apt install npm -y && npm install pm2 && pm2 start pm2.json
-pm2monit
+pm2 monit
 
 ```
 

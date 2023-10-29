@@ -1,5 +1,28 @@
 # 命令指南
 
+## Intro
+
+```text
+    /help - HELP YOURSELF
+    /chat - Chat with me :)
+    /task - Function enable
+    /ask - Chat with func_disable
+    /tool - Tool list
+    /clear - Clear Chat
+    /auth - Auth a task
+Private Chat:
+    /bind - RSS
+    /unbind - RSS
+    /set_endpoint - <apikey>#<endpoint>
+    /clear_endpoint - Clear endpoint and key
+    /env - 配置变量,use as shell
+    /token - bind your token
+    /token_clear - clear your token
+    /func_ban - ban function
+    /func_unban - unban function
+```
+
+
 ## 命令表
 
 ```shell
@@ -15,6 +38,11 @@ set_endpoint - 自定义后端
 clear_endpoint - 抹除自定义设置
 auth - 鉴权
 env - 虚拟环境设置
+token - 绑定 token
+token_clear - 清除 token
+func_ban - 禁用函数
+func_unban - 解禁函数
+
 ```
 
 ::: tip 提示

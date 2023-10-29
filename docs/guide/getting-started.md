@@ -52,7 +52,7 @@ docker-compose -f docker-compose.yml up -d
 
 ### 🍔 Shell
 
-人工使用Pm2启动，需要自行安装 `redis` ，`rabbitmq` ，`mongodb` 。
+人工使用 pm2 启动
 
 ```shell
 git clone https://github.com/LlmKira/Openaibot.git
