@@ -4,34 +4,72 @@
 
 请确认您的系统语言集为 UTF8，否则输入 `dpkg-reconfigure locales` 配置语言。
 
-请确认您服务器的内存大于 `1G`， 否则使用 PM2 会无限重启。
+请确认您服务器的内存大于 `1G`。
 
 ::: tip 提示
 基础运行负载为，每个接收器+发送器(一个平台)约为 600MB 内存。
 接收器和发送器可以分开部署，但是数据库必须共享。
 :::
 
-## 🥞 自动安装
+## 📦 快速开始
+
+阅读 [🧀 部署文档](https://llmkira.github.io/Docs/) 获得更多信息。
+
+::: warning 重要
+请提前用 `python3 start_sender.py`  `python3 start_receiver.py` 测试是否能正常运行。
+
+Docker 用户可以使用 `docker-compose up -f docker-compose.yml` 前台预测试。
+
+运行 `python3 start_tutorial.py` 观看教程。
+:::
+
+### 🥣 Docker
+
+Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
+
+#### 自动 Docker/Docker-compose 安装运行
 
 如果你在使用一台崭新的服务器，你可以使用下面的Shell来尝试自动安装本项目。
 
-```shell
-curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | bash
+此脚本会自动使用 Docker 方法安装所需服务并映射端口，如果您已经部署了 `redis` ，`rabbitmq` ，`mongodb` 。
 
+请自行修改 `docker-compose.yml` 文件。
+
+```shell
+
+curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | bash
 ```
 
-### 🥣 Docker
+#### 手动 Docker-compose安装
 
 ```shell
 git clone https://github.com/LlmKira/Openaibot.git
 cd Openaibot
-docker-compose -f docker-compose.yml -p llmbot up -d llmbot
+cp .env.exp .env&&nano .env
+docker-compose -f docker-compose.yml up -d
 
 ```
 
-::: warning
-如果您使用 Docker 运行机器人，您可能会遇到依赖缺失问题，有时候我们会忘记打包新的依赖库。
+### 🍔 Shell
 
+人工使用Pm2启动，需要自行安装 `redis` ，`rabbitmq` ，`mongodb` 。
+
+```shell
+git clone https://github.com/LlmKira/Openaibot.git
+cd Openaibot
+python3 -m pip install -r requirements.txt
+cp .env.exp .env && nano .env
+apt install npm -y && npm install pm2 && pm2 start pm2.json
+pm2 monit
+
+```
+
+重启程序使用 `pm2 restart pm2.json` 。
+
+::: tip
+推荐您使用 Docker Compose 进行部署。或者使用 Docker 运行数据库，pm2 运行机器人。
+
+Docker 镜像使用 pm2-runtime 运行机器人，和您使用 shell 是一样的。
 :::
 
 ## 🥽 手动安装
@@ -52,6 +90,9 @@ docker-compose -f docker-compose.yml -p llmbot up -d llmbot
 或者 [博客文章](https://krau.top/posts/install-docker-one-key)
 
 Windows 用户可以安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+**请确保您的数据库在一个网桥/局域网内，否则会链接失败。**
+
 :::
 
 此时您可以尝试使用 [Docker 运行机器人](#🥣-docker)，如果您不想使用 Docker，您可以继续阅读。
@@ -81,6 +122,19 @@ docker run -d -p 6379:6379 \
 推荐您添加密码防止数据库暴露在公网。
 :::
 
+### 🥕 安装 MongoDB
+
+请参考文章安装 MongoDB
+
+https://www.runoob.com/mongodb/mongodb-linux-install.html
+
+https://www.mongodb.com/try/download/community
+
+::: tip 提示
+推荐您添加密码防止数据库暴露在公网。
+项目默认配置为 `mongodb://admin:8a8a8a@localhost:27017/` ，您可以在 .env 自行配置。
+:::
+
 ### 🐰 安装消息队列
 
 提供两种方式安装缓存数据库，您可以选择其中一种。
@@ -96,12 +150,13 @@ docker run -d -p 6379:6379 \
 # 安装 RabbitMQ
 docker pull rabbitmq:3.10-management
 docker run -d -p 5672:5672 -p 15672:15672 \
-        -e RABBITMQ_DEFAULT_USER=admin \
-        -e RABBITMQ_DEFAULT_PASS=admin \
-        --hostname myRabbit \
-        --name rabbitmq \
-        rabbitmq:3.10-management 
+  -e RABBITMQ_DEFAULT_USER=admin \
+  -e RABBITMQ_DEFAULT_PASS=8a8a8a \
+  --hostname myRabbit \
+  --name rabbitmq \
+  rabbitmq:3.10-management
 docker ps -l
+
 ```  
 
 ::: tip 提示
@@ -170,10 +225,20 @@ python3 start_receiver.py
 
 ### 🥽 运行时环境变量
 
-| 变量名称                | 值     | 说明                       |
-|---------------------|-------|--------------------------|
-| `LLMBOT_STOP_REPLY` | 1     | 如果值为 1，则停止接收回复           |
-| `LLMBOT_LOG_OUTPUT` | DEBUG | 如果值为 DEBUG，则在屏幕上打印长调试日志。 |
+| 变量名 | 值| 描述 |
+|--------------------------------|------------------------------------|-- -------------------------------------------------- ----------|
+| `LLMBOT_STOP_REPLY` | 1 | 如果值为 1，则停止接收回复 |
+| `LLMBOT_LOG_OUTPUT` | 调试| 如果值为 DEBUG，则将长调试日志打印到屏幕上。 |
+| `SERVICE_PROVIDER` | `public`,`private`...... | `llmkira/middleware/service_provider` 中的身份验证组件 |
+
+::: info
+
+修改 `SERVICE_PROVIDER` 变量以更改身份验证方法。
+
+在 `settings.toml` 文件中配置服务提供商限制/白名单。
+
+默认值为`public`，意为机器人向公众开放。
+:::
 
 ### 🥛 Telegram
 

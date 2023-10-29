@@ -5,35 +5,75 @@
 Please confirm that your system language set is UTF8, otherwise enter `dpkg-reconfigure locales` to configure the
 language.
 
-Please make sure that the memory of your server is greater than `1G`, otherwise PM2 will restart indefinitely.
+Please make sure that the memory of your server is greater than `1G`.
 
-::: tip tip
+::: tip
 The base operating load is approximately 600MB of memory per receiver + transmitter (one platform).
 Receivers and transmitters can be deployed separately, but the database must be shared.
 :::
 
-## 🥞 Automatic installation
+## 📦 Quick Start
+
+Read the [🧀 Deployment Documentation](https://llmkira.github.io/Docs/) for more information.
+
+::: warning Test Before You Run
+Please use `python3 start_sender.py` `python3 start_receiver.py` to test whether it can run normally.
+
+If you are using Docker, you can use `docker-compose up -f docker-compose.yml` to test whether it can run normally in
+front.
+
+Run `python3 start_tutorial.py` to check the tutorial.
+:::
+
+### 🥣 Docker
+
+Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
+
+#### Automatic Docker/Docker-compose installation and operation
 
 If you are using a brand new server, you can use the following shell to try to automatically install this project.
 
-```shell
-curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | bash
+This script will automatically install the required services and map ports using Docker methods, if you have
+deployed `redis`, `rabbitmq`, `mongodb`.
 
+Please modify the `docker-compose.yml` file yourself.
+
+```shell
+
+curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | bash
 ```
 
-### 🥣 Docker
+#### Manual Docker-compose installation
 
 ```shell
 git clone https://github.com/LlmKira/Openaibot.git
 cd Openaibot
-docker-compose -f docker-compose.yml -p llmbot up -d llmbot
+cp .env.exp .env&&nano .env
+docker-compose -f docker-compose.yml up -d
 
 ```
 
-::: warning
-If you use Docker to run your robot, you may encounter missing dependencies. Sometimes we forget to package new
-dependencies.
+### 🍔 Shell
 
+To manually start using Pm2, you need to install `redis`, `rabbitmq`, `mongodb` by yourself.
+
+```shell
+git clone https://github.com/LlmKira/Openaibot.git
+cd Openaibot
+python3 -m pip install -r requirements.txt
+cp .env.exp .env && nano .env
+apt install npm -y && npm install pm2 && pm2 start pm2.json
+pm2monit
+
+```
+
+To restart the program use `pm2 restart pm2.json`.
+
+::: tip
+It is recommended that you use Docker Compose for deployment. Or use Docker to run the database and pm2 to run the
+robot.
+
+The Docker image uses pm2-runtime to run the robot, the same way you use the shell.
 :::
 
 ## 🥽 Manual installation
@@ -54,6 +94,8 @@ To install Docker Compose, please refer to [Official Documentation](https://docs
 Or [blog post](https://krau.top/posts/install-docker-one-key)
 
 Windows users can install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+**Please make sure your database is within a bridge/LAN, otherwise the link will fail.**
 :::
 
 At this point you can try using [Docker to run the robot](#🥣-docker), if you don’t want to use Docker you can continue
@@ -82,6 +124,20 @@ docker run -d -p 6379:6379 \
 
 ::: tip tip
 It is recommended that you add a password to prevent the database from being exposed to the public network.
+:::
+
+### 🥕 Install MongoDB
+
+Please refer to the article to install MongoDB
+
+https://www.runoob.com/mongodb/mongodb-linux-install.html
+
+https://www.mongodb.com/try/download/community
+
+::: tip
+It is recommended that you add a password to prevent the database from being exposed to the public network.
+The default configuration of the project is `mongodb://admin:8a8a8a@localhost:27017/`, you can configure it yourself in
+.env.
 :::
 
 ### 🐰 Install RabbitMQ
@@ -176,10 +232,20 @@ Configure the corresponding environment variables to run the corresponding robot
 
 ### 🥽 Runtime environment variables
 
-| variable name       | value | description                                                  |
-|---------------------|-------|--------------------------------------------------------------|
-| `LLMBOT_STOP_REPLY` | 1     | If value is 1, stop receiving replies                        |
-| `LLMBOT_LOG_OUTPUT` | DEBUG | If the value is DEBUG, print a long debug log to the screen. |
+| variable name       | value                  | description                                                  |
+|---------------------|------------------------|--------------------------------------------------------------|
+| `LLMBOT_STOP_REPLY` | 1                      | If value is 1, stop receiving replies                        |
+| `LLMBOT_LOG_OUTPUT` | DEBUG                  | If the value is DEBUG, print a long debug log to the screen. |
+| `SERVICE_PROVIDER`  | `public`,`private`.... | Auth Model Provider in `llmkira/middleware/service_provider` |
+
+::: info
+
+Modify the `SERVICE_PROVIDER` variable to change the authentication method.
+
+Config the service provider limits/whitelist in `settings.toml` file.
+
+The default value is `public`, which means that the robot is open to the public.
+:::
 
 ### 🥛 Telegram
 
