@@ -454,18 +454,18 @@ Among them, the `task_meta` parameter must be cloned from the `child` function o
 It is forbidden to modify the `continue_step` and `limit_child` attributes, which will affect the recursion depth.
 :::
 
-## 🎃 在插件中访问/创建文件
+## 🎃 Access/create files in the plugin
 
-Redis 上传下载依赖一个短文件 ID。
+Redis upload and download rely on a short file ID.
 
-参考以下处理
+Refer to the following processing
 
-### 📥 下载文件
+### 📥 Download file
 
 ````python
 async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwargs):
     """
-    处理message，返回message
+    Process message and return message
     """
     _translate_file = []
     for item in task.message:
@@ -477,7 +477,7 @@ async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwar
     _file_obj: List[File.Data] = [item for item in _file_obj if item]
 ````
 
-### 📤 上传文件
+### 📤 Upload files
 
 ```jupyterpython
 file_obj = await RawMessage.upload_file(name="test.png", data=translated_file.getvalue())
