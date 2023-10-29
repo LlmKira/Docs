@@ -300,6 +300,7 @@ OpenAPI 组件会设定哪些版本的插件可以被加载，如果您的插件
 ### 🥥 前验触发器
 
 使用这个装饰器来阻止或通过特定符合条件的响应。
+用于敏感词过滤，特殊语段无命令主动响应，动态配置响应扳机，拒绝某些用户回答等场景。
 
 ```jupyterpython
 @resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
@@ -316,7 +317,7 @@ async def on_chat_message(message: str, uid: str, **kwargs):
 
 ### 🔨 错误禁用
 
-使用这个装饰器来监测行动函数的错误。
+使用这个装饰器来监测行动函数的错误。错误次数被记录过多后，此函数插件就不被调用了。
 
 ```python
 @resign_plugin_executor(function=search)
@@ -325,6 +326,8 @@ def search_in_bilibili(arg: dict, **kwargs):
 ```
 
 注意这是一个同步装饰器，如果您的函数是异步的，可以调用 utils.sync。
+
+>TODO 将错误作为日志警戒到该去的地方。
 
 ### 🍩 路由通信
 
