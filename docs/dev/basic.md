@@ -89,19 +89,29 @@ bilibili-api-python = "^16.1.0"
 **下面的代码必须放进开头进行架构版本验证。**
 
 ```python
+__package_name__ = "llmbot_plugin_bilisearch"
 __plugin_name__ = "search_in_bilibili"
 __openapi_version__ = "20231017"
 
 from llmkira.sdk.func_calling import verify_openapi_version
 
-verify_openapi_version(__plugin_name__, __openapi_version__)  # 验证 // [!code hl]
+verify_openapi_version(__package_name__, __openapi_version__)  # 验证 // [!code hl]
 
 ```
 
 ### ⚙️ 定义函数类
 
 ```python
-bilibili = Function(name=__plugin_name__, description="Search videos on bilibili.com(哔哩哔哩)")
+__plugin_name__ = "search_in_bilibili"
+
+from llmkira.sdk.endpoint.openai import Function
+
+bilibili = Function(name=__plugin_name__,
+                    description="Search videos on bilibili.com(哔哩哔哩)",
+                    config=Function.FunctionExtra(
+                        system_prompt="",  # 如果装载到了/系统提示
+                    ),
+                    )
 bilibili.add_property(
     property_name="keywords",
     property_description="Keywords entered in the search box",
@@ -287,6 +297,18 @@ __plugin_meta__ = PluginMetadata(
 OpenAPI 组件会设定哪些版本的插件可以被加载，如果您的插件版本过低，会报错，届时您将收到用户的 Issue。
 :::
 
+### 🔨 错误禁用
+
+使用这个装饰器来监测行动函数的错误。
+
+```python
+@resign_plugin_executor(function=search)
+def search_in_bilibili(arg: dict, **kwargs):
+    pass
+```
+
+注意这是一个同步装饰器，如果您的函数是异步的，可以调用 utils.sync。
+
 ### 🍩 路由通信
 
 我们通过定义任务消息中的 `Meta` 和 `Location` 向各个平台路由通信。具体例子如下：
@@ -311,7 +333,7 @@ Location 继承过来即可。因为你不知道其他用户是谁。
 
 ##### 📍`reply_raw` 回复不可读内容
 
-此消息会被回写进记忆记录，作为被查询的对象，由LLM处理后代为答复。
+此消息会被回写进记忆记录，作为被查询的对象，由LLM处理后代为答复。比如搜索，数据集查询结果。
 
 *适用消息内容举例*
 
@@ -347,27 +369,39 @@ Location 继承过来即可。因为你不知道其他用户是谁。
 #### 📕 自定义通信模式
 
 ```python
-_meta = task.task_meta.child(__plugin_name__) # 自定义 // [!code focus:7]
+__plugin_name__ = ...
+task = ...
+receiver = ...
+_search_result = ...
+from llmkira.some.pack import Task, TaskHeader, RawMessage
+
+_meta = task.task_meta.child(__plugin_name__)  # 自定义 // [!code focus:7]
 _meta.callback_forward = True
-_meta.callback_forward_reprocess = True
+_meta.callback_forward_reprocess = False
+_meta.direct_reply = False
+_meta.write_back = True
+_meta.release_chain = True
 _meta.callback = TaskHeader.Meta.Callback(
     role="function",
     name=__plugin_name__
 )
-await Task(queue=receiver.platform).send_task(
-    task=TaskHeader(
-        sender=task.sender,  # 继承发送者
-        receiver=receiver,  # 因为可能有转发，所以可以单配
-        task_meta=_meta,
-        message=[
-            RawMessage(
-                user_id=receiver.user_id,
-                chat_id=receiver.chat_id,
-                text=_search_result
-            )
-        ]
+
+
+async def main():
+    await Task(queue=receiver.platform).send_task(
+        task=TaskHeader(
+            sender=task.sender,  # 继承发送者
+            receiver=receiver,  # 因为可能有转发，所以可以单配
+            task_meta=_meta,
+            message=[
+                RawMessage(
+                    user_id=receiver.user_id,
+                    chat_id=receiver.chat_id,
+                    text=_search_result
+                )
+            ]
+        )
     )
-)
 ```
 
 其中，`task_meta` 参数必须由函数传递的 `task_meta` 的 `child` 函数克隆过来。
