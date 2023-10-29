@@ -454,6 +454,35 @@ Among them, the `task_meta` parameter must be cloned from the `child` function o
 It is forbidden to modify the `continue_step` and `limit_child` attributes, which will affect the recursion depth.
 :::
 
+## 🎃 在插件中访问/创建文件
+
+Redis 上传下载依赖一个短文件 ID。
+
+参考以下处理
+
+### 📥 下载文件
+
+````python
+async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwargs):
+    """
+    处理message，返回message
+    """
+    _translate_file = []
+    for item in task.message:
+        if item.file:
+            for i in item.file:
+                _translate_file.append(i)
+    _file_obj = [await RawMessage.download_file(file_id=i.file_id)
+                 for i in sorted(set(_translate_file), key=_translate_file.index)]
+    _file_obj: List[File.Data] = [item for item in _file_obj if item]
+````
+
+### 📤 上传文件
+
+```jupyterpython
+file_obj = await RawMessage.upload_file(name="test.png", data=translated_file.getvalue())
+```
+
 ## 📩 Register EntryPoint Group
 
 Document reference https://python-poetry.org/docs/pyproject/#plugins

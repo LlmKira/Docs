@@ -427,6 +427,35 @@ async def main():
 禁止修改 `continue_step` 和 `limit_child` 属性，影响递归深度。
 :::
 
+## 🎃 在插件中访问/创建文件
+
+Redis 上传下载依赖一个短文件 ID。
+
+参考以下处理
+
+### 📥 下载文件
+
+````python
+async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwargs):
+    """
+    处理message，返回message
+    """
+    _translate_file = []
+    for item in task.message:
+        if item.file:
+            for i in item.file:
+                _translate_file.append(i)
+    _file_obj = [await RawMessage.download_file(file_id=i.file_id)
+                 for i in sorted(set(_translate_file), key=_translate_file.index)]
+    _file_obj: List[File.Data] = [item for item in _file_obj if item]
+````
+
+### 📤 上传文件
+
+```jupyterpython
+file_obj = await RawMessage.upload_file(name="test.png", data=translated_file.getvalue())
+```
+
 ## 📩 注册 EntryPoint Group
 
 文档参考 https://python-poetry.org/docs/pyproject/#plugins
