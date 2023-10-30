@@ -352,10 +352,14 @@ Get it and fill in your Kook robot Token.
 ```ini
 OPENAI_API_KEY = sk-xxx
 OPENAI_API_MODEL = gpt-3.5-turbo-0613
-OPENAI_API_ENDPOINT = https://api.openai.com/v1
+OPENAI_API_ENDPOINT = https://api.openai.com/v1/chat/completions
 OPENAI_API_ORG_ID = org-xxx
 OPENAI_API_PROXY = socks5://127.0.0.1:7890
 ```
+
+::: warning Endpoint
+Please make sure your Openai API Endpoint is complete.
+:::
 
 Optional models are as follows
 
@@ -372,4 +376,19 @@ OPENAI_API_MODEL = [
 
 Users can apply for API Key at [Openai](https://beta.openai.com/).
 
-User data and usage are recorded in the Redis database `sub:{user_id}`.
+User data and usage are recorded in a Mongodb database.
+
+### 🍟 Unofficial backend
+
+If you use [One-API](https://github.com/songquanpeng/one-api) as a shunt and use a model that does not support
+functions, then you may not be able to use some based on
+Function of Func Calling.
+Such as functions, file support, etc.
+
+If you're using Azure, make sure the version you're using supports the functions.
+
+This program can be used without `functions`
+Run single point reply, but when sending the request, it will
+have `functions: Optional[List[Function]]` `function_call: Optional[str]` parameter.
+
+

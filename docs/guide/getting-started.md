@@ -354,10 +354,14 @@ KOOK_BOT_TOKEN = 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 ```ini
 OPENAI_API_KEY = sk-xxx
 OPENAI_API_MODEL = gpt-3.5-turbo-0613
-OPENAI_API_ENDPOINT = https://api.openai.com/v1
+OPENAI_API_ENDPOINT = https://api.openai.com/v1/chat/completions
 OPENAI_API_ORG_ID = org-xxx
 OPENAI_API_PROXY = socks5://127.0.0.1:7890
 ```
+
+::: warning 提示
+请确保您的 Openai API Endpoint 是完整的。
+:::
 
 可选模型如下
 
@@ -374,4 +378,18 @@ OPENAI_API_MODEL = [
 
 用户可以在 [Openai](https://beta.openai.com/) 申请 API Key。
 
-用户数据和使用记录在 Redis 数据库 `sub:{user_id}` 中。
+用户数据和使用记录在 Mongodb 数据库中。
+
+### 🍟 非官方后端
+
+如果你使用 [One-API](https://github.com/songquanpeng/one-api) 作为分流器并使用了不支持 functions 的模型，那么你可能无法使用一些基于
+Func Calling 的功能。
+例如函数，文件支持等。
+
+如果你在使用 Azure ，请确认你使用的版本支持 functions。
+
+本程序可以在不能使用 `functions`
+的情况下运行单点回复，但是其发送请求时，会带有 `functions: Optional[List[Function]]` `function_call: Optional[str]` 参数。
+
+
+
