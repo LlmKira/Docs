@@ -124,16 +124,34 @@ docker run -d -p 6379:6379 \
 
 ### 🥕 安装 MongoDB
 
+#### 通过命令行安装
+
 请参考文章安装 MongoDB
 
 https://www.runoob.com/mongodb/mongodb-linux-install.html
 
 https://www.mongodb.com/try/download/community
 
+https://www.prisma.io/dataguide/mongodb/setting-up-a-local-mongodb-database
+
 ::: tip 提示
 推荐您添加密码防止数据库暴露在公网。
 项目默认配置为 `mongodb://admin:8a8a8a@localhost:27017/` ，您可以在 .env 自行配置。
+
+如果你通过 shell 安装 Mongodb ，请使用 `mongosh` 命令进入数据库创建用户和查询DSN。
 :::
+
+#### 通过 Docker 安装
+
+```bash
+docker pull mongo:latest
+docker run -d -p 27017:27017 \
+  --name mongo \
+  -e MONGO_INITDB_ROOT_USERNAME="admin" \
+  -e MONGO_INITDB_ROOT_PASSWORD="8a8a8a" \
+  mongo:latest
+
+```
 
 ### 🐰 安装消息队列
 

@@ -128,17 +128,36 @@ It is recommended that you add a password to prevent the database from being exp
 
 ### 🥕 Install MongoDB
 
+#### Install via shell
+
 Please refer to the article to install MongoDB
+
+https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-20-04
 
 https://www.runoob.com/mongodb/mongodb-linux-install.html
 
-https://www.mongodb.com/try/download/community
+https://www.prisma.io/dataguide/mongodb/setting-up-a-local-mongodb-database
 
-::: tip
+::: tip Here!
 It is recommended that you add a password to prevent the database from being exposed to the public network.
 The default configuration of the project is `mongodb://admin:8a8a8a@localhost:27017/`, you can configure it yourself in
 .env.
+
+If you installed Mongodb through the shell, please use the `mongosh` command to enter the database to create a user and
+query the DSN.
 :::
+
+#### Install via Docker
+
+```bash
+docker pull mongo:latest
+docker run -d -p 27017:27017 \
+   --name mongo \
+   -e MONGO_INITDB_ROOT_USERNAME="admin" \
+   -e MONGO_INITDB_ROOT_PASSWORD="8a8a8a" \
+   mongo:latest
+
+```
 
 ### 🐰 Install RabbitMQ
 
