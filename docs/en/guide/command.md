@@ -74,7 +74,7 @@ required by the plugin through this command.
 
 For example `/env VAR=551;VAR2=asdasd;VAR3="1231"`
 
-All input will be formatted and upper.
+All keys(name) will be formatted and upper.
 
 ### 🍭 Binding and unbinding
 
