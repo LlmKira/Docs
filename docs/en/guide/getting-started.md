@@ -53,6 +53,10 @@ docker-compose -f docker-compose.yml up -d
 
 ```
 
+Update the image with `docker-compose pull`.
+
+View Shell in docker, use `docker exec -it llmbot /bin/bash`, type `exit` to exit.
+
 ### 🍔 Shell
 
 To manually start using Pm2
