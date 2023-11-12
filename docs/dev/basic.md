@@ -113,6 +113,38 @@ verify_openapi_version(__package_name__, __openapi_version__)  # 验证 // [!cod
 
 ### ⚙️ 定义函数类
 
+#### 🧩 从 pydantic 2.0 模型创建函数类
+
+```python
+from llmkira.sdk.schema import Function
+from pydantic import BaseModel, ConfigDict, field_validator, Field
+
+__plugin_name__ = "search_in_bilibili"
+
+
+# function verification class
+class Alarm(BaseModel):
+    """
+    Set a timed reminder (only for minutes)
+    """
+    delay: int = Field(..., description="The delay time, in minutes")
+    content: str = Field(..., description="reminder content")
+    model_config = ConfigDict(extra="allow")
+
+    @field_validator("delay")
+    def delay_validator(cls, v):
+        if v < 0:
+            raise ValueError("delay must be greater than 0")
+        return v
+
+
+function = Function.parse_from_pydantic(schema_model=Alarm, function_name=__plugin_name__)
+
+# Function(name='Alarm', description='Set a timed reminder (only for minutes)', parameters=Parameters(type='object', properties={'delay': {'description': 'The delay time, in minutes', 'title': 'Delay', 'type': 'integer'}, 'content': {'description': 'reminder content', 'title': 'Content', 'type': 'string'}}, required=['content', 'delay']))
+```
+
+#### 🧲 单独创建函数类
+
 ```python
 __plugin_name__ = "search_in_bilibili"
 
