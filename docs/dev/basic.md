@@ -154,10 +154,6 @@ except Exception as e:
 
 请您在 工具类 的 `run` 方法中使用 pydantic 做参数校验。
 
-```python
-
-```
-
 ### ⚓️ 功能函数
 
 功能函数就是一个实现功能的函数。随便你怎么写。
@@ -558,7 +554,7 @@ async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwar
 
 ### 📤 上传文件
 
-```jupyterpython
+```python
 async def test():
     file_obj = await File.upload_file(file_name=file_name,
                                       file_data=file_data,

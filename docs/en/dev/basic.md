@@ -165,9 +165,6 @@ except Exception as e:
 
 Please use pydantic for parameter verification in the `run` method of the tool class.
 
-```python
-
-```
 
 ### ⚓️ Function function
 
@@ -377,9 +374,7 @@ async def run(self,
 
 ### 🥄 Register meta information
 
-Core class `PluginMetadata`
-, you can view its
-composition [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84).
+Core class `PluginMetadata`, you can view its composition [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84).
 
 ```python
 # name
@@ -402,7 +397,6 @@ __plugin_meta__ = PluginMetadata(
 ```
 
 ::: tip
-
 `FuncPair` binds `function` function class and `tool` tool class.
 :::
 
@@ -433,7 +427,7 @@ async def on_chat_message(message: str, uid: str, **kwargs):
 
 If the function returns `True`, it indicates that a pre-action is required.
 
-### 🔨 Error disabled
+### 🔨 Error Hook
 
 Use this decorator to monitor action functions for errors. After too many errors are recorded, this function plug-in
 will not be called.
@@ -445,8 +439,6 @@ def search_in_bilibili(arg: dict, **kwargs):
 ```
 
 Note that this is a sync decorator, if your function is asynchronous, you can call utils.sync.
-
-> TODO sends errors as log alerts where they should go.
 
 ### 🍩 Routing communication
 
@@ -587,7 +579,7 @@ async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwar
 
 ### 📤 Upload files
 
-```jupyterpython
+```python
 async def test():
     file_obj = await File.upload_file(file_name=file_name,
                                       file_data=file_data,
