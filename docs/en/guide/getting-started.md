@@ -65,7 +65,7 @@ To manually start using Pm2
 git clone https://github.com/LlmKira/Openaibot.git
 cd Openaibot
 pip install poetry
-poetry install
+poetry install --all-extras
 cp .env.exp .env && nano .env
 apt install npm -y && npm install pm2 && pm2 start pm2.json
 pm2 monit
