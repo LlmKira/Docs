@@ -95,6 +95,18 @@ parameter verification classes.
 
 The plug-in name within the function must be referenced by the `__plugin_name__` parameter.
 
+### 🔧 How to test in real time
+
+You can put the plug-in into `Openaibot/llmkira/extra/plugins` under the project to mount the test locally.
+
+Or use poetry to install the mount locally.
+
+```shell
+cd your_plugin_path
+poetry install
+
+```
+
 ### 🪣 Add variables and verification
 
 **The following code must be placed at the beginning for architecture version verification.**
@@ -164,7 +176,6 @@ except Exception as e:
 ```
 
 Please use pydantic for parameter verification in the `run` method of the tool class.
-
 
 ### ⚓️ Function function
 
@@ -374,7 +385,8 @@ async def run(self,
 
 ### 🥄 Register meta information
 
-Core class `PluginMetadata`, you can view its composition [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84).
+Core class `PluginMetadata`, you can view its
+composition [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84).
 
 ```python
 # name
