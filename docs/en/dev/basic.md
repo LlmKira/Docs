@@ -39,14 +39,15 @@ resources of the plug-in.
 Because pypi does not allow uploading large files, the plug-in packaging folder should not upload large resource files.
 :::
 
-`LICENSE` is the open source agreement file of the project and has certain legal effect.
+`LICENSE` is the open source agreement file of the project and has certain legal effect. To select a protocol, please
+refer to [Zhihu Question](https://www.zhihu.com/question/19568896).
 
-### 🔗 Prepare
+### 🔗 Import verification
 
 First make sure you have installed a code editor and Python environment (version greater than 3.9). In the Shell console
 or CMD command line, enter `python -v` to check or view the version.
 
-#### Install Tools
+#### Download the required tools
 
 ```shell
 pip install llmkira
@@ -54,13 +55,13 @@ pip install poetry
 ```
 
 `llmkira`
-It is a packaged collection of robot main files, and the plugin needs to import the classes in it for use. There is an
+It is a packaged collection of robot main files, and the plug-in needs to import the classes in it for use. There is an
 imported [example](https://github.com/LlmKira/llmbot_plugin_bilisearch/blob/main/llmbot_plugin_bilisearch/__init__.py).
 
 `poetry` is a widely used dependency management and packaging
 tool. [Introduction to basic commands](https://python-poetry.org/docs/basic-usage/).
 
-:::info Common commands
+::: info Common commands
 
 - `poetry init` creates a `pyproject.toml` file
 - `poetry lock` updates dependent locks
@@ -72,7 +73,7 @@ tool. [Introduction to basic commands](https://python-poetry.org/docs/basic-usag
 
 Create a new project on Github and pull it locally.
 
-Use a code editor to open the local project folder, then create the plugin folder, open a Shell at the current project
+Use a code editor to open the local project folder, then create the plug-in folder, open a Shell at the current project
 location and enter `poetry init` to establish the basic package structure.
 
 Complete the `pyproject.toml` file by entering the required information.
@@ -89,14 +90,14 @@ At this point, the basic structure of the project has been established.
 
 ## 📦 Development process
 
-The plugin is internally composed of function classes, tool classes, meta information, functional functions, and
+The plug-in is internally composed of function classes, tool classes, meta information, functional functions, and
 parameter verification classes.
 
-The plugin name within the function must be referenced by the `__plugin_name__` parameter.
+The plug-in name within the function must be referenced by the `__plugin_name__` parameter.
 
 ### 🪣 Add variables and verification
 
-**The following code must be placed at the beginning for architecture version verification. **
+**The following code must be placed at the beginning for architecture version verification.**
 
 ```python
 __package_name__ = "llmbot_plugin_bilisearch"
@@ -116,12 +117,14 @@ __plugin_name__ = "search_in_bilibili"
 
 from llmkira.sdk.endpoint.openai import Function
 
-bilibili = Function(name=__plugin_name__,
-                    description="Search videos on bilibili.com(bilibili)",
-                    config=Function.FunctionExtra(
-                        system_prompt="",  # If loaded to /system prompt
-                    ),
-                    )
+bilibili = Function(
+    name=__plugin_name__,
+    description="Search videos on bilibili.com(bilibili)",
+).update_config(
+    config=Function.FunctionExtra(
+        system_prompt="🔍Searching on google.com...",
+    )
+)
 bilibili.add_property(
     property_name="keywords",
     property_description="Keywords entered in the search box",
@@ -146,23 +149,24 @@ from pydantic import BaseModel
 
 
 class Bili(BaseModel):  # Parameters // [!code focus:5]
-
     keywords: str
 
+    class Config:
+        extra = "allow"
 
-classConfig:
-extra = "allow"
 
+try:
+    _set = Bili.parse_obj({"arg": ...})  # // [!code focus:3]
+except Exception as e:
+    print(e)
+    # failed
+    pass
 ```
 
 Please use pydantic for parameter verification in the `run` method of the tool class.
 
 ```python
-try:
-    _set = Bili.parse_obj(arg)  # // [!code focus:3]
-except:
-    # failed
-    pass
+
 ```
 
 ### ⚓️ Function function
@@ -178,14 +182,13 @@ Therefore, it is recommended to write a main function to facilitate subsequent u
 All tool classes must
 inherit [BaseTool](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L14).
 
-The specific writing method is as follows:
+The schema is as follows(maybe not the latest version):
 
 ```python
 import re
-from abc import ABC
-from typing import Optional, List, Union, Literal
-
-from pydantic import BaseModel, Field
+from abc import abstractmethod, ABC
+from typing import Optional, Type, Dict, Any, List, Union, Set, final, Literal
+from pydantic import BaseModel, Field, validator, root_validator
 
 
 class BaseTool(ABC, BaseModel):
@@ -193,7 +196,7 @@ class BaseTool(ABC, BaseModel):
     Basic tool class, all tool classes should inherit this class
     """
     silent: bool = Field(False, description="whether to be silent")
-    function: Function = Field(..., description="function")  # Pass in the function class // [!code ++]
+    function: "Function" = Field(..., description="Function")
     keywords: List[str] = Field([], description="keywords")
     pattern: Optional[re.Pattern] = Field(None, description="regular matching")
     require_auth: bool = Field(False, description="Whether authorization is required")
@@ -204,6 +207,36 @@ class BaseTool(ABC, BaseModel):
     env_required: List[str] = Field([], description="Environment variable requirements")
     file_match_required: Optional[re.Pattern] = Field(None, description="re.compile file name regular")
 
+    # exp: re.compile(r"file_id=([a-z0-9]{8})")
+
+    @final
+    @property
+    def name(self):
+        """
+        Tool name
+        """
+        return self.function.name
+
+    @final
+    @root_validator
+    def _check_conflict(cls, values):
+        # env_required and silent
+        if values["silent"] and values["env_required"]:
+            raise ValueError("silent and env_required can not be True at the same time")
+        return values
+
+    @final
+    @validator("keywords", pre=True)
+    def _check_keywords(cls, v):
+        for i in v:
+            if not isinstance(i, str):
+                raise ValueError(f"keyword must be str, got {type(i)}")
+            if len(i) > 20:
+                raise ValueError(f"keyword must be less than 20 characters, got {len(i)}")
+            if len(i) < 2:
+                raise ValueError(f"keyword must be more than 2 characters, got {len(i)}")
+        return v
+
     def env_help_docs(self, empty_env: List[str]) -> str:
         """
         Environment variables help documentation
@@ -213,34 +246,90 @@ class BaseTool(ABC, BaseModel):
         assert isinstance(empty_env, list), "empty_env must be list"
         return "You need to configure ENV to start use this tool"
 
-    def func_message(self, message_text):
-        pass  # Rule check, if it returns True then candidate it in the request
-
-    def pre_check(self) -> Union[bool, str]:  # Pre-check, return False if unqualified, True if qualified
+    @abstractmethod
+    def pre_check(self) -> Union[bool, str]:
         """
-        String representation {false,reason}
-        :return: bool | str(error message)
+        Pre-check, return False if not qualified, return True if qualified
+        Returns a string indicating unqualified status with a reason
         """
-        pass
+        return ...
 
-    async def run(self, task, receiver, arg, **kwargs):  # Run the main function // [!code ++]
-        env = kwargs.get("env", {})
-        pass
+    @abstractmethod
+    def func_message(self, message_text, **kwargs):
+        """
+        If it is qualified, it returns message, otherwise it returns None, which means it will not be processed.
+        """
+        for i in self.keywords:
+            if i in message_text:
+                return self.function
+        # Regular matching
+        if self.pattern:
+            match = self.pattern.match(message_text)
+            if match:
+                return self.function
+        return None
 
-    async def failed(self, platform, task, receiver,
-                     reason):  # If the call fails, you have to call it yourself in run. //[!code++]
-        pass
+    @abstractmethod
+    async def failed(self,
+                     task: "TaskHeader", receiver: "TaskHeader.Location",
+                     exception, env: dict,
+                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+                     ):
+        """
+        Usually write-back message + notification message
+        :param task: task
+        :param receiver: receiver
+        :param exception: exception
+        :param env: environment variable
+        :param arg: parameter
+        :param pending_task: task batch
+        :param refer_llm_result: last result
+        """
+        return ...
+
+    @abstractmethod
+    async def callback(self,
+                       task: "TaskHeader", receiver: "TaskHeader.Location",
+                       env: dict,
+                       arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
+                       ):
+        """
+        This function will be called if the operation is successful
+        :param task: task
+        :param receiver: receiver
+        :param arg: parameter
+        :param env: environment variable
+        :param pending_task: task batch
+        :param refer_llm_result: last result
+        """
+        return ...
+
+    @abstractmethod
+    async def run(self, *,
+                  task: "TaskHeader", receiver: "TaskHeader.Location",
+                  arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+                  ):
+        """
+        Process the function and return the writeback result
+        :param task: task
+        :param receiver: receiver
+        :param arg: parameter
+        :param env: environment variable
+        :param pending_task: task batch
+        :param refer_llm_result: last result
+        """
+        return ...
 ```
 
 ::: warning
 The `callback` function has no effect at the moment.
 :::
 
-Please consider internationalization when constructing keyword parameters, and try to avoid public keywords. It is
-prohibited to use single keywords.word keyword.
+Please consider internationalization when constructing keyword parameters, and try to avoid public keywords, and
+single-word keywords are prohibited.
 
-:::danger
-After inheriting the `BaseTool` class, it is forbidden to define `__init__`**
+::: danger
+**After inheriting the `BaseTool` class, it is forbidden to define `__init__`**
 :::
 
 #### 🎳 Dynamic activation
@@ -259,8 +348,8 @@ The `deploy_child` parameter determines whether this function continues to pass 
 During each recursion, the last function will be ignored. If you want the function to be reusable, you can set
 the `repeatable` attribute.
 
-The default chain recursion depth is 6, defined through the `limit_child` attribute. **The plugin prohibits redefining
-this parameter. **
+The default chain recursion depth is 6, defined through the `limit_child` attribute. **The plug-in prohibits redefining
+this parameter.**
 
 ::: tip
 When a new dialogue chain is started, the first node will inherit the function attributes of the previous dialogue
@@ -279,8 +368,11 @@ Subclasses override the `env_help_docs` function to return help documentation. T
 is missing and is sent to the user.
 
 ```python
-async def run(self, task, receiver, arg, **kwargs):
-    env = kwargs.get("env", {})
+async def run(self,
+              task: "TaskHeader", receiver: "TaskHeader.Location",
+              arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+              ):
+    print(env)
 ```
 
 ### 🥄 Register meta information
@@ -292,7 +384,8 @@ composition [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/fu
 ```python
 # name
 __plugin_name__ = "search_in_bilibili"
-
+__openapi_version__ = ...
+PluginMetadata, FuncPair = ...  # import
 # The middle is the function code...
 
 # Core meta information
@@ -317,13 +410,15 @@ The `openapi_version` parameter records the current synchronized version. If the
 may need to synchronize this parameter to support the new interface.
 
 ::: tip When do I need to update my plugin?
-The OpenAPI component will set which versions of the plugin can be loaded. If your plugin version is too low, an error
+The OpenAPI component will set which versions of the plug-in can be loaded. If your plug-in version is too low, an error
 will be reported, and you will receive an Issue from the user.
 :::
 
 ### 🥥 A priori trigger
 
 Use this decorator to block or pass responses that meet certain conditions.
+Used for filtering sensitive words, actively responding to special paragraphs without commands, dynamically configuring
+response triggers, rejecting answers from certain users, etc.
 
 ```jupyterpython
 @resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
@@ -340,7 +435,8 @@ If the function returns `True`, it indicates that a pre-action is required.
 
 ### 🔨 Error disabled
 
-Use this decorator to monitor action functions for errors.
+Use this decorator to monitor action functions for errors. After too many errors are recorded, this function plug-in
+will not be called.
 
 ```python
 @resign_plugin_executor(function=search)
@@ -349,6 +445,8 @@ def search_in_bilibili(arg: dict, **kwargs):
 ```
 
 Note that this is a sync decorator, if your function is asynchronous, you can call utils.sync.
+
+> TODO sends errors as log alerts where they should go.
 
 ### 🍩 Routing communication
 
@@ -361,6 +459,11 @@ Location can be inherited. Because you don't know who the other users are.
 
 `Meta` has the following internally maintained constructors:
 
+::: warning
+`callback` receives a list of `TaskHeader.Meta.Callback` objects, which are used to record the callback information of
+plugin!
+:::
+
 ##### 📍`reply_notify` notification reply
 
 Notification only, does not write back memory records, and does not trigger any processing.
@@ -370,7 +473,7 @@ Used for error notifications or one-way notifications.
 *Examples of applicable message content*
 
 ```text
-An error occurred and you did not configure a constant that the plugin requires.
+An error has occurred and youThere are no constants required to configure the plugin.
 ```
 
 ##### 📍`reply_raw` Reply to unreadable content
@@ -392,7 +495,7 @@ reply. For example, search, data set query results.
 ```
 
 ::: warning
-**`reply_raw` cannot reply to file messages. **
+**`reply_raw` cannot reply to file messages.**
 :::
 
 ##### 📍`reply_message` Reply to readable content/file message
@@ -407,7 +510,7 @@ After querying, your Genshin Impact account is: 123456789
 ```
 
 ```
-<file message>
+file message
 ```
 
 #### 📕 Custom communication mode
@@ -417,31 +520,36 @@ __plugin_name__ = ...
 task = ...
 receiver = ...
 _search_result = ...
-from llmkira.some.pack import Task, TaskHeader, RawMessage
+Task, TaskHeader, RawMessage = ...
 
+pending_task = ...
 _meta = task.task_meta.child(__plugin_name__)  # Custom // [!code focus:7]
 _meta.callback_forward = True
 _meta.callback_forward_reprocess = False
 _meta.direct_reply = False
 _meta.write_back = True
 _meta.release_chain = True
-_meta.callback = TaskHeader.Meta.Callback(
-    role="function",
-    name=__plugin_name__
-)
+_meta.callback = [
+    TaskHeader.Meta.Callback.create(
+        name=__plugin_name__,
+        function_response=f"Run Failed",
+        tool_call_id=pending_task.get_batch_id()
+    )
+]
 
 
 async def main():
-    await Task(queue=receiver.platform).send_task(
+    await Task.create_and_send(
+        queue_name=receiver.platform,
         task=TaskHeader(
-            sender=task.sender,  # Inherit the sender
-            receiver=receiver,  # Because there may be forwarding, it can be configured alone
+            sender=task.sender,
+            receiver=receiver,
             task_meta=_meta,
             message=[
                 RawMessage(
                     user_id=receiver.user_id,
                     chat_id=receiver.chat_id,
-                    text=_search_result
+                    text=f"🍖{__plugin_name__} Run Failed: {exception}"
                 )
             ]
         )
@@ -472,15 +580,25 @@ async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwar
         if item.file:
             for i in item.file:
                 _translate_file.append(i)
-    _file_obj = [await RawMessage.download_file(file_id=i.file_id)
-                 for i in sorted(set(_translate_file), key=_translate_file.index)]
-    _file_obj: List[File.Data] = [item for item in _file_obj if item]
+        _file_obj = [await i.raw_file()
+                     for i in sorted(set(_translate_file), key=_translate_file.index)]
+        _file_obj = [item for item in _file_obj if item]
 ````
 
 ### 📤 Upload files
 
 ```jupyterpython
-file_obj = await RawMessage.upload_file(name="test.png", data=translated_file.getvalue())
+async def test():
+    file_obj = await File.upload_file(file_name=file_name,
+                                      file_data=file_data,
+                                      created_by=uid
+                                      )
+    # Use utils.sync to convert async to sync
+    file_obj = sync(File.upload_file(file_name=file_name,
+                                     file_data=file_data,
+                                     created_by=uid
+                                     )
+                    )
 ```
 
 ## 📩 Register EntryPoint Group
@@ -494,8 +612,8 @@ Document reference https://python-poetry.org/docs/pyproject/#plugins
 bilisearch = "llmbot_plugin_bilisearch"
 ```
 
-After the equal sign is the package name of the plugin, and in front is the unique key (please make sure it does not
-conflict with other plugins)
+After the equal sign is the package name of the plug-in, and in front is the unique key (please make sure it does not
+conflict with other plug-ins)
 
 ```toml
 [tool.poetry]

@@ -106,12 +106,14 @@ __plugin_name__ = "search_in_bilibili"
 
 from llmkira.sdk.endpoint.openai import Function
 
-bilibili = Function(name=__plugin_name__,
-                    description="Search videos on bilibili.com(哔哩哔哩)",
-                    config=Function.FunctionExtra(
-                        system_prompt="",  # 如果装载到了/系统提示
-                    ),
-                    )
+bilibili = Function(
+    name=__plugin_name__,
+    description="Search videos on bilibili.com(哔哩哔哩)",
+).update_config(
+    config=Function.FunctionExtra(
+        system_prompt="🔍Searching on google.com...",
+    )
+)
 bilibili.add_property(
     property_name="keywords",
     property_description="Keywords entered in the search box",
@@ -138,20 +140,22 @@ class Bili(BaseModel):  # 参数 // [!code focus:5]
 
     keywords: str
 
+    class Config:
+        extra = "allow"
 
-class Config:
-    extra = "allow"
 
+try:
+    _set = Bili.parse_obj({"arg": ...})  # // [!code focus:3]
+except Exception as e:
+    print(e)
+    # failed
+    pass
 ```
 
 请您在 工具类 的 `run` 方法中使用 pydantic 做参数校验。
 
 ```python
-try:
-    _set = Bili.parse_obj(arg)  # // [!code focus:3]
-except:
-    # failed
-    pass
+
 ```
 
 ### ⚓️ 功能函数
@@ -170,18 +174,18 @@ except:
 
 ```python
 import re
-from abc import ABC
-from typing import Optional, List, Union, Literal
-
-from pydantic import BaseModel, Field
+from abc import abstractmethod, ABC
+from typing import Optional, Type, Dict, Any, List, Union, Set, final, Literal
+from pydantic import BaseModel, Field, validator, root_validator
 
 
 class BaseTool(ABC, BaseModel):
     """
     基础工具类，所有工具类都应该继承此类
     """
+    __slots__ = ()
     silent: bool = Field(False, description="是否静默")
-    function: Function = Field(..., description="功能")  # 函数类传入 // [!code ++]
+    function: "Function" = Field(..., description="功能")
     keywords: List[str] = Field([], description="关键词")
     pattern: Optional[re.Pattern] = Field(None, description="正则匹配")
     require_auth: bool = Field(False, description="是否需要授权")
@@ -190,6 +194,36 @@ class BaseTool(ABC, BaseModel):
     require_auth_kwargs: dict = {}
     env_required: List[str] = Field([], description="环境变量要求")
     file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
+
+    # exp: re.compile(r"file_id=([a-z0-9]{8})")
+
+    @final
+    @property
+    def name(self):
+        """
+        工具名称
+        """
+        return self.function.name
+
+    @final
+    @root_validator
+    def _check_conflict(cls, values):
+        # env_required and silent
+        if values["silent"] and values["env_required"]:
+            raise ValueError("silent and env_required can not be True at the same time")
+        return values
+
+    @final
+    @validator("keywords", pre=True)
+    def _check_keywords(cls, v):
+        for i in v:
+            if not isinstance(i, str):
+                raise ValueError(f"keyword must be str, got {type(i)}")
+            if len(i) > 20:
+                raise ValueError(f"keyword must be less than 20 characters, got {len(i)}")
+            if len(i) < 2:
+                raise ValueError(f"keyword must be more than 2 characters, got {len(i)}")
+        return v
 
     def env_help_docs(self, empty_env: List[str]) -> str:
         """
@@ -200,22 +234,79 @@ class BaseTool(ABC, BaseModel):
         assert isinstance(empty_env, list), "empty_env must be list"
         return "You need to configure ENV to start use this tool"
 
-    def func_message(self, message_text):
-        pass  # 规则检查，如果返回True则在请求中候选它
-
-    def pre_check(self) -> Union[bool, str]:  # 预检查，如果不合格则返回False，合格则返回True
+    @abstractmethod
+    def pre_check(self) -> Union[bool, str]:
         """
-        字符串表示 {false,reason}
-        :return: bool | str(error message)
+        预检查，如果不合格则返回 False，合格则返回 True
+        返回字符串表示不合格，且有原因
         """
-        pass
+        return ...
 
-    async def run(self, task, receiver, arg, **kwargs):  # 运行主函数 // [!code ++]
-        env = kwargs.get("env", {})
-        pass
+    @abstractmethod
+    def func_message(self, message_text, **kwargs):
+        """
+        如果合格则返回message，否则返回None，表示不处理
+        """
+        for i in self.keywords:
+            if i in message_text:
+                return self.function
+        # 正则匹配
+        if self.pattern:
+            match = self.pattern.match(message_text)
+            if match:
+                return self.function
+        return None
 
-    async def failed(self, platform, task, receiver, reason):  # 失败调用，要自己在 run 里面调用哦。 // [!code ++]
-        pass
+    @abstractmethod
+    async def failed(self,
+                     task: "TaskHeader", receiver: "TaskHeader.Location",
+                     exception, env: dict,
+                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+                     ):
+        """
+        通常为 回写消息+通知消息
+        :param task: 任务
+        :param receiver: 接收者
+        :param exception: 异常
+        :param env: 环境变量
+        :param arg: 参数
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
+
+    @abstractmethod
+    async def callback(self,
+                       task: "TaskHeader", receiver: "TaskHeader.Location",
+                       env: dict,
+                       arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
+                       ):
+        """
+        运行成功会调用此函数
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
+
+    @abstractmethod
+    async def run(self, *,
+                  task: "TaskHeader", receiver: "TaskHeader.Location",
+                  arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+                  ):
+        """
+        处理函数并返回回写结果
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
 ```
 
 ::: warning
@@ -258,8 +349,11 @@ class BaseTool(ABC, BaseModel):
 子类重写 `env_help_docs` 函数，返回帮助文档。此文档会在缺失变量时调用，被发送给用户。
 
 ```python
-async def run(self, task, receiver, arg, **kwargs):
-    env = kwargs.get("env", {})
+async def run(self,
+              task: "TaskHeader", receiver: "TaskHeader.Location",
+              arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+              ):
+    print(env)
 ```
 
 ### 🥄 注册元信息
@@ -270,7 +364,8 @@ async def run(self, task, receiver, arg, **kwargs):
 ```python
 # 名称
 __plugin_name__ = "search_in_bilibili"
-
+__openapi_version__ = ...
+PluginMetadata, FuncPair = ...  # import
 # 中间是函数代码......
 
 # 核心元信息
@@ -325,9 +420,7 @@ def search_in_bilibili(arg: dict, **kwargs):
     pass
 ```
 
-注意这是一个同步装饰器，如果您的函数是异步的，可以调用 utils.sync。
-
->TODO 将错误作为日志警戒到该去的地方。
+注意这是一个同步装饰器，如果您的函数是异步的，可以调用 utils.sync 运行异步函数。
 
 ### 🍩 路由通信
 
@@ -338,6 +431,11 @@ Location 继承过来即可。因为你不知道其他用户是谁。
 #### 📕 通信模式
 
 `Meta` 有如下内部维护的构造函数：
+
+::: danger
+
+请注意，`callback` 参数是一个列表，您需要使用 **一个或多个** `TaskHeader.Meta.Callback.create`构建的对象填充此列表。
+:::
 
 ##### 📍`reply_notify` 通知回复
 
@@ -393,31 +491,36 @@ __plugin_name__ = ...
 task = ...
 receiver = ...
 _search_result = ...
-from llmkira.some.pack import Task, TaskHeader, RawMessage
+Task, TaskHeader, RawMessage = ...
 
+pending_task = ...
 _meta = task.task_meta.child(__plugin_name__)  # 自定义 // [!code focus:7]
 _meta.callback_forward = True
 _meta.callback_forward_reprocess = False
 _meta.direct_reply = False
 _meta.write_back = True
 _meta.release_chain = True
-_meta.callback = TaskHeader.Meta.Callback(
-    role="function",
-    name=__plugin_name__
-)
+_meta.callback = [
+    TaskHeader.Meta.Callback.create(
+        name=__plugin_name__,
+        function_response=f"Run Failed",
+        tool_call_id=pending_task.get_batch_id()
+    )
+]
 
 
 async def main():
-    await Task(queue=receiver.platform).send_task(
+    await Task.create_and_send(
+        queue_name=receiver.platform,
         task=TaskHeader(
-            sender=task.sender,  # 继承发送者
-            receiver=receiver,  # 因为可能有转发，所以可以单配
+            sender=task.sender,
+            receiver=receiver,
             task_meta=_meta,
             message=[
                 RawMessage(
                     user_id=receiver.user_id,
                     chat_id=receiver.chat_id,
-                    text=_search_result
+                    text=f"🍖{__plugin_name__} Run Failed：{exception}"
                 )
             ]
         )
@@ -448,15 +551,25 @@ async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwar
         if item.file:
             for i in item.file:
                 _translate_file.append(i)
-    _file_obj = [await RawMessage.download_file(file_id=i.file_id)
-                 for i in sorted(set(_translate_file), key=_translate_file.index)]
-    _file_obj: List[File.Data] = [item for item in _file_obj if item]
+        _file_obj = [await i.raw_file()
+                     for i in sorted(set(_translate_file), key=_translate_file.index)]
+        _file_obj = [item for item in _file_obj if item]
 ````
 
 ### 📤 上传文件
 
 ```jupyterpython
-file_obj = await RawMessage.upload_file(name="test.png", data=translated_file.getvalue())
+async def test():
+    file_obj = await File.upload_file(file_name=file_name,
+                                      file_data=file_data,
+                                      created_by=uid
+                                      )
+    # Use utils.sync to convert async to sync
+    file_obj = sync(File.upload_file(file_name=file_name,
+                                     file_data=file_data,
+                                     created_by=uid
+                                     )
+                    )
 ```
 
 ## 📩 注册 EntryPoint Group
