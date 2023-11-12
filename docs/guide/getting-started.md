@@ -381,18 +381,9 @@ OPENAI_API_PROXY = socks5://127.0.0.1:7890
 请确保您的 Openai API Endpoint 是完整的。
 :::
 
-可选模型如下
+支持除 `0314` 系列的所有 Openai 模型列表请参考 [Openai API](https://beta.openai.com/docs/api-reference/)。
 
-```python
-OPENAI_API_MODEL = [
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-0613",
-    "gpt-3.5-turbo",
-    "gpt-4-0314",
-    "gpt-4-0613",
-    "gpt-4"
-]
-```
+支持 `FunctionCall` 和 `ToolCall` 两种模式。
 
 用户可以在 [Openai](https://beta.openai.com/) 申请 API Key。
 
@@ -402,12 +393,11 @@ OPENAI_API_MODEL = [
 
 如果你使用 [One-API](https://github.com/songquanpeng/one-api) 作为分流器并使用了不支持 functions 的模型，那么你可能无法使用一些基于
 Func Calling 的功能。
-例如函数，文件支持等。
 
 如果你在使用 Azure ，请确认你使用的版本支持 functions。
 
-本程序可以在不能使用 `functions`
-的情况下运行单点回复，但是其发送请求时，会带有 `functions: Optional[List[Function]]` `function_call: Optional[str]` 参数。
+本程序可以在不能使用`functions`的情况下运行单点回复，
+但是其发送请求时，会带有 `functions: Optional[List[Function]]` `function_call: Optional[str]` 参数。
 
 
 

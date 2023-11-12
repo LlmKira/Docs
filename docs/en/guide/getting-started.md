@@ -380,18 +380,10 @@ OPENAI_API_PROXY = socks5://127.0.0.1:7890
 Please make sure your Openai API Endpoint is complete.
 :::
 
-Optional models are as follows
+For a list of all Openai models supported except the `0314` series, please refer
+to [Openai API](https://beta.openai.com/docs/api-reference/).
 
-```python
-OPENAI_API_MODEL = [
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-0613",
-    "gpt-3.5-turbo",
-    "gpt-4-0314",
-    "gpt-4-0613",
-    "gpt-4"
-]
-```
+Supports two modes: `FunctionCall` and `ToolCall`.
 
 Users can apply for API Key at [Openai](https://beta.openai.com/).
 
