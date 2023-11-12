@@ -102,7 +102,7 @@ The plug-in name within the function must be referenced by the `__plugin_name__`
 ```python
 __package_name__ = "llmbot_plugin_bilisearch"
 __plugin_name__ = "search_in_bilibili"
-__openapi_version__ = "20231017"
+__openapi_version__ = ...  # refer https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/__init__.py#L27
 
 from llmkira.sdk.func_calling import verify_openapi_version
 
