@@ -140,7 +140,7 @@ class Alarm(BaseModel):
         return v
 
 
-function = Function.parse_from_pydantic(schema_model=Alarm, function_name=__plugin_name__)
+function = Function.parse_from_pydantic(schema_model=Alarm, plugin_name=__plugin_name__)
 
 # Function(name='Alarm', description='Set a timed reminder (only for minutes)', parameters=Parameters(type='object', properties={'delay': {'description': 'The delay time, in minutes', 'title': 'Delay', 'type': 'integer'}, 'content': {'description': 'reminder content', 'title': 'Content', 'type': 'string'}}, required=['content', 'delay']))
 ```
