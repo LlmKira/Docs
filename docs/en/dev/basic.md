@@ -1,5 +1,8 @@
 # 📝 Plug-in Development Guide
 
+> This process may be out of date, it is recommended to start development directly from the template repo.
+> Also, you can refer to the `llmkira/extra/`
+
 The sample plug-in library used in this article: https://github.com/LlmKira/llmbot_plugin_bilisearch
 
 OpenaiBot provides an OPENAPI interface registration system for third-party plug-ins. This article will introduce how to
@@ -129,7 +132,9 @@ verify_openapi_version(__package_name__, __openapi_version__)  # Verify // [!cod
 ```python
 from llmkira.sdk.schema import Function
 from pydantic import BaseModel, ConfigDict, field_validator, Field
-__plugin_name__= "some_function"
+
+__plugin_name__ = "some_function"
+
 
 # function verification class
 class Alarm(BaseModel):
@@ -187,18 +192,17 @@ parameter validation class to check the parameters.
 With the help of [pydantic](https://pydantic-docs.helpmanual.io/), we can easily implement parameter verification.
 
 ```python
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Bili(BaseModel):  # Parameters // [!code focus:5]
     keywords: str
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 try:
-    _set = Bili.parse_obj({"arg": ...})  # // [!code focus:3]
+    _set = Bili.model_validate({"arg": ...})  # // [!code focus:3]
 except Exception as e:
     print(e)
     # failed
@@ -223,63 +227,53 @@ inherit [BaseTool](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/fu
 The schema is as follows(maybe not the latest version):
 
 ```python
+import os
 import re
 from abc import abstractmethod, ABC
-from typing import Optional, Type, Dict, Any, List, Union, Set, final, Literal
-from pydantic import BaseModel, Field, validator, root_validator
+from typing import Optional, Dict, Any, List, Union, final, Literal
+from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, Field, PrivateAttr
+
+if TYPE_CHECKING:
+    pass
 
 
 class BaseTool(ABC, BaseModel):
     """
-    Basic tool class, all tool classes should inherit this class
+    基础工具类，所有工具类都应该继承此类
     """
-    silent: bool = Field(False, description="whether to be silent")
-    function: "Function" = Field(..., description="Function")
-    keywords: List[str] = Field([], description="keywords")
-    pattern: Optional[re.Pattern] = Field(None, description="regular matching")
-    require_auth: bool = Field(False, description="Whether authorization is required")
-    repeatable: bool = Field(False, description="Whether it is reusable")
-    deploy_child: Literal[0, 1] = Field(1,
-                                        description="If it is 0, it ends at this chain point and will not be passed down")
+
+    __slots__ = ()
+    silent: bool = Field(False, description="是否静默")
+    function: "Function" = Field(..., description="功能")
+    keywords: List[str] = Field([], description="关键词")
+    pattern: Optional[re.Pattern] = Field(None, description="正则匹配")
+    require_auth: bool = Field(False, description="是否需要授权")
+    repeatable: bool = Field(False, description="是否可重复使用")
+    deploy_child: Literal[0, 1] = Field(1, description="如果为0，终结于此链点，不再向下传递")
     require_auth_kwargs: dict = {}
-    env_required: List[str] = Field([], description="Environment variable requirements")
-    file_match_required: Optional[re.Pattern] = Field(None, description="re.compile file name regular")
+    env_required: List[str] = Field([], description="环境变量要求,ALSO NEED env_prefix")
+    env_prefix: str = Field("", description="环境变量前缀")
+    file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
+    extra_arg: Dict[Any, Any] = Field({}, description="额外参数")
+    __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
 
     # exp: re.compile(r"file_id=([a-z0-9]{8})")
 
     @final
-    @property
-    def name(self):
+    def get_os_env(self, env_name):
         """
-        Tool name
+        获取 PLUGIN_+ 公共环境变量
         """
-        return self.function.name
-
-    @final
-    @root_validator
-    def _check_conflict(cls, values):
-        # env_required and silent
-        if values["silent"] and values["env_required"]:
-            raise ValueError("silent and env_required can not be True at the same time")
-        return values
-
-    @final
-    @validator("keywords", pre=True)
-    def _check_keywords(cls, v):
-        for i in v:
-            if not isinstance(i, str):
-                raise ValueError(f"keyword must be str, got {type(i)}")
-            if len(i) > 20:
-                raise ValueError(f"keyword must be less than 20 characters, got {len(i)}")
-            if len(i) < 2:
-                raise ValueError(f"keyword must be more than 2 characters, got {len(i)}")
-        return v
+        env = os.getenv("PLUGIN_" + env_name, None)
+        return env
 
     def env_help_docs(self, empty_env: List[str]) -> str:
         """
-        Environment variables help documentation
-        :param empty_env: List of unconfigured environment variables
-        :return: help documentation/warnings
+        Help documentation for environment variables
+        :param empty_env: 未被配置的环境变量列表
+        :return: 帮助文档/警告
         """
         assert isinstance(empty_env, list), "empty_env must be list"
         return "You need to configure ENV to start use this tool"
@@ -287,20 +281,21 @@ class BaseTool(ABC, BaseModel):
     @abstractmethod
     def pre_check(self) -> Union[bool, str]:
         """
-        Pre-check, return False if not qualified, return True if qualified
-        Returns a string indicating unqualified status with a reason
+        Pre-check, if it is not qualified, return False, otherwise return True
         """
         return ...
 
     @abstractmethod
     def func_message(self, message_text, **kwargs):
         """
-        If it is qualified, it returns message, otherwise it returns None, which means it will not be processed.
+        If qualified, return message, otherwise return None, indicating that it is not processed
+        message_text: 消息文本
+        message_raw: 消息原始数据 `RawMessage`
         """
         for i in self.keywords:
             if i in message_text:
                 return self.function
-        # Regular matching
+        # 正则匹配
         if self.pattern:
             match = self.pattern.match(message_text)
             if match:
@@ -314,14 +309,15 @@ class BaseTool(ABC, BaseModel):
                      arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
                      ):
         """
-        Usually write-back message + notification message
-        :param task: task
-        :param receiver: receiver
-        :param exception: exception
-        :param env: environment variable
-        :param arg: parameter
-        :param pending_task: task batch
-        :param refer_llm_result: last result
+        Run this function if the function fails
+        Write back the message and notify the message
+        :param task: 任务
+        :param receiver: 接收者
+        :param exception: 异常
+        :param env: 环境变量
+        :param arg: 参数
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
         """
         return ...
 
@@ -332,13 +328,13 @@ class BaseTool(ABC, BaseModel):
                        arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
                        ):
         """
-        This function will be called if the operation is successful
-        :param task: task
-        :param receiver: receiver
-        :param arg: parameter
-        :param env: environment variable
-        :param pending_task: task batch
-        :param refer_llm_result: last result
+        Run this function if the function is successful
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
         """
         return ...
 
@@ -348,13 +344,13 @@ class BaseTool(ABC, BaseModel):
                   arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
                   ):
         """
-        Process the function and return the writeback result
-        :param task: task
-        :param receiver: receiver
-        :param arg: parameter
-        :param env: environment variable
-        :param pending_task: task batch
-        :param refer_llm_result: last result
+        Run this function
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
         """
         return ...
 ```
@@ -475,7 +471,10 @@ Use this decorator to monitor action functions for errors. After too many errors
 will not be called.
 
 ```python
-@resign_plugin_executor(function=search)
+from llmkira.sdk.openapi.fuse import resign_plugin_executor
+
+
+@resign_plugin_executor(function=search, handle_exceptions=(Exception,))
 def search_in_bilibili(arg: dict, **kwargs):
     pass
 ```
@@ -634,6 +633,10 @@ async def test():
                                      )
                     )
 ```
+
+`file_id` Must be the key name of the file stored in Redis, and cannot be written casually.
+
+If you want to pass url to upload, please use the class method of `File`.
 
 ## 📩 Register EntryPoint Group
 

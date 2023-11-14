@@ -1,6 +1,8 @@
 # 📝 插件开发指南
 
-本文所用示例插件库: https://github.com/LlmKira/llmbot_plugin_bilisearch
+> 此过程可能会过时，推荐直接从模板库开始开发。也可以参考内部插件 `llmkira/extra/`。
+
+本文所用示例插件模板库: https://github.com/LlmKira/llmbot_plugin_bilisearch
 
 OpenaiBot 为第三方插件提供了 OPENAPI 接口注册系统，本文将介绍如何建造一个插件。
 
@@ -113,9 +115,7 @@ verify_openapi_version(__package_name__, __openapi_version__)  # 验证 // [!cod
 
 ### ⚙️ 定义函数类
 
-
 #### 🧩 从 pydantic 2.0 模型创建函数类
-
 
 ```python
 from llmkira.sdk.schema import Function
@@ -145,9 +145,7 @@ function = Function.parse_from_pydantic(schema_model=Alarm, plugin_name=__plugin
 # Function(name='Alarm', description='Set a timed reminder (only for minutes)', parameters=Parameters(type='object', properties={'delay': {'description': 'The delay time, in minutes', 'title': 'Delay', 'type': 'integer'}, 'content': {'description': 'reminder content', 'title': 'Content', 'type': 'string'}}, required=['content', 'delay']))
 ```
 
-
 #### 🧲 单独创建函数类
-
 
 ```python
 __plugin_name__ = "search_in_bilibili"
@@ -181,19 +179,18 @@ bilibili.add_property(
 借助于 [pydantic](https://pydantic-docs.helpmanual.io/) ，我们可以很方便的实现参数校验。
 
 ```python
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Bili(BaseModel):  # 参数 // [!code focus:5]
 
     keywords: str
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 try:
-    _set = Bili.parse_obj({"arg": ...})  # // [!code focus:3]
+    _set = Bili.model_validate({"arg": ...})  # // [!code focus:3]
 except Exception as e:
     print(e)
     # failed
@@ -217,16 +214,23 @@ except Exception as e:
 具体写法见下：
 
 ```python
+import os
 import re
 from abc import abstractmethod, ABC
-from typing import Optional, Type, Dict, Any, List, Union, Set, final, Literal
-from pydantic import BaseModel, Field, validator, root_validator
+from typing import Optional, Dict, Any, List, Union, final, Literal
+from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, Field, PrivateAttr
+
+if TYPE_CHECKING:
+    pass
 
 
 class BaseTool(ABC, BaseModel):
     """
     基础工具类，所有工具类都应该继承此类
     """
+
     __slots__ = ()
     silent: bool = Field(False, description="是否静默")
     function: "Function" = Field(..., description="功能")
@@ -236,38 +240,21 @@ class BaseTool(ABC, BaseModel):
     repeatable: bool = Field(False, description="是否可重复使用")
     deploy_child: Literal[0, 1] = Field(1, description="如果为0，终结于此链点，不再向下传递")
     require_auth_kwargs: dict = {}
-    env_required: List[str] = Field([], description="环境变量要求")
+    env_required: List[str] = Field([], description="环境变量要求,ALSO NEED env_prefix")
+    env_prefix: str = Field("", description="环境变量前缀")
     file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
+    extra_arg: Dict[Any, Any] = Field({}, description="额外参数")
+    __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
 
     # exp: re.compile(r"file_id=([a-z0-9]{8})")
 
     @final
-    @property
-    def name(self):
+    def get_os_env(self, env_name):
         """
-        工具名称
+        获取 PLUGIN_+ 公共环境变量
         """
-        return self.function.name
-
-    @final
-    @root_validator
-    def _check_conflict(cls, values):
-        # env_required and silent
-        if values["silent"] and values["env_required"]:
-            raise ValueError("silent and env_required can not be True at the same time")
-        return values
-
-    @final
-    @validator("keywords", pre=True)
-    def _check_keywords(cls, v):
-        for i in v:
-            if not isinstance(i, str):
-                raise ValueError(f"keyword must be str, got {type(i)}")
-            if len(i) > 20:
-                raise ValueError(f"keyword must be less than 20 characters, got {len(i)}")
-            if len(i) < 2:
-                raise ValueError(f"keyword must be more than 2 characters, got {len(i)}")
-        return v
+        env = os.getenv("PLUGIN_" + env_name, None)
+        return env
 
     def env_help_docs(self, empty_env: List[str]) -> str:
         """
@@ -290,6 +277,8 @@ class BaseTool(ABC, BaseModel):
     def func_message(self, message_text, **kwargs):
         """
         如果合格则返回message，否则返回None，表示不处理
+        message_text: 消息文本
+        message_raw: 消息原始数据 `RawMessage`
         """
         for i in self.keywords:
             if i in message_text:
@@ -459,7 +448,10 @@ async def on_chat_message(message: str, uid: str, **kwargs):
 使用这个装饰器来监测行动函数的错误。错误次数被记录过多后，此函数插件就不被调用了。
 
 ```python
-@resign_plugin_executor(function=search)
+from llmkira.sdk.openapi.fuse import resign_plugin_executor
+
+
+@resign_plugin_executor(function=search, handle_exceptions=(Exception,))
 def search_in_bilibili(arg: dict, **kwargs):
     pass
 ```
@@ -615,6 +607,10 @@ async def test():
                                      )
                     )
 ```
+
+`file_id` 只能是 Redis 存放文件的键名，不能随便写。
+
+如果你要使用 `url` 上传，请使用 `File` 的类方法。
 
 ## 📩 注册 EntryPoint Group
 
