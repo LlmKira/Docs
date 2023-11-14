@@ -223,125 +223,125 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field, PrivateAttr
 
 if TYPE_CHECKING:
-  pass
+    pass
 
 
 class BaseTool(ABC, BaseModel):
-  """
-  基础工具类，所有工具类都应该继承此类
-  """
+    """
+    基础工具类，所有工具类都应该继承此类
+    """
 
-  __slots__ = ()
-  silent: bool = Field(False, description="是否静默")
-  function: "Function" = Field(..., description="功能")
-  keywords: List[str] = Field([], description="关键词")
-  pattern: Optional[re.Pattern] = Field(None, description="正则匹配")
-  require_auth: bool = Field(False, description="是否需要授权")
-  repeatable: bool = Field(False, description="是否可重复使用")
-  deploy_child: Literal[0, 1] = Field(1, description="如果为0，终结于此链点，不再向下传递")
-  require_auth_kwargs: dict = {}
-  env_required: List[str] = Field([], description="环境变量要求,ALSO NEED env_prefix")
-  env_prefix: str = Field("", description="环境变量前缀")
-  file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
-  extra_arg: Dict[Any, Any] = Field({}, description="额外参数")
-  __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
+    __slots__ = ()
+    silent: bool = Field(False, description="是否静默")
+    function: "Function" = Field(..., description="功能")
+    keywords: List[str] = Field([], description="关键词")
+    pattern: Optional[re.Pattern] = Field(None, description="正则匹配")
+    require_auth: bool = Field(False, description="是否需要授权")
+    repeatable: bool = Field(False, description="是否可重复使用")
+    deploy_child: Literal[0, 1] = Field(1, description="如果为0，终结于此链点，不再向下传递")
+    require_auth_kwargs: dict = {}
+    env_required: List[str] = Field([], description="环境变量要求,ALSO NEED env_prefix")
+    env_prefix: str = Field("", description="环境变量前缀")
+    file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
+    extra_arg: Dict[Any, Any] = Field({}, description="额外参数")
+    __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
 
-  # exp: re.compile(r"file_id=([a-z0-9]{8})")
+    # exp: re.compile(r"file_id=([a-z0-9]{8})")
 
-  @final
-  def get_os_env(self, env_name):
-    """
-    获取 PLUGIN_+ 公共环境变量
-    """
-    env = os.getenv("PLUGIN_" + env_name, None)
-    return env
+    @final
+    def get_os_env(self, env_name):
+        """
+        获取 PLUGIN_+ 公共环境变量
+        """
+        env = os.getenv("PLUGIN_" + env_name, None)
+        return env
 
-  def env_help_docs(self, empty_env: List[str]) -> str:
-    """
-    环境变量帮助文档
-    :param empty_env: 未被配置的环境变量列表
-    :return: 帮助文档/警告
-    """
-    assert isinstance(empty_env, list), "empty_env must be list"
-    return "You need to configure ENV to start use this tool"
+    def env_help_docs(self, empty_env: List[str]) -> str:
+        """
+        环境变量帮助文档
+        :param empty_env: 未被配置的环境变量列表
+        :return: 帮助文档/警告
+        """
+        assert isinstance(empty_env, list), "empty_env must be list"
+        return "You need to configure ENV to start use this tool"
 
-  @abstractmethod
-  def pre_check(self) -> Union[bool, str]:
-    """
-    预检查，如果不合格则返回 False，合格则返回 True
-    返回字符串表示不合格，且有原因
-    """
-    return ...
+    @abstractmethod
+    def pre_check(self) -> Union[bool, str]:
+        """
+        预检查，如果不合格则返回 False，合格则返回 True
+        返回字符串表示不合格，且有原因
+        """
+        return ...
 
-  @abstractmethod
-  def func_message(self, message_text, **kwargs):
-    """
-    如果合格则返回message，否则返回None，表示不处理
-    决定了此函数是否被添加进备选中。可以自由定制
-    message_text: 消息文本
-    message_raw: 消息原始数据 `RawMessage`
-    """
-    # message_raw=kwargs.get("message_raw") # 获取原始消息而不是文本内容
-    for i in self.keywords:
-      if i in message_text:
-        return self.function
-    # 正则匹配
-    if self.pattern:
-      match = self.pattern.match(message_text)
-      if match:
-        return self.function
-    return None
+    @abstractmethod
+    def func_message(self, message_text, **kwargs):
+        """
+        如果合格则返回message，否则返回None，表示不处理
+        决定了此函数是否被添加进备选中。可以自由定制
+        message_text: 消息文本
+        message_raw: 消息原始数据 `RawMessage`
+        """
+        # message_raw=kwargs.get("message_raw") # 获取原始消息而不是文本内容
+        for i in self.keywords:
+            if i in message_text:
+                return self.function
+        # 正则匹配
+        if self.pattern:
+            match = self.pattern.match(message_text)
+            if match:
+                return self.function
+        return None
 
-  @abstractmethod
-  async def failed(self,
-                   task: "TaskHeader", receiver: "TaskHeader.Location",
-                   exception, env: dict,
-                   arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                   ):
-    """
-    通常为 回写消息+通知消息
-    :param task: 任务
-    :param receiver: 接收者
-    :param exception: 异常
-    :param env: 环境变量
-    :param arg: 参数
-    :param pending_task: 任务批次
-    :param refer_llm_result: 上一次的结果
-    """
-    return ...
-
-  @abstractmethod
-  async def callback(self,
+    @abstractmethod
+    async def failed(self,
                      task: "TaskHeader", receiver: "TaskHeader.Location",
-                     env: dict,
-                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
+                     exception, env: dict,
+                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
                      ):
-    """
-    运行成功会调用此函数
-    :param task: 任务
-    :param receiver: 接收者
-    :param arg: 参数
-    :param env: 环境变量
-    :param pending_task: 任务批次
-    :param refer_llm_result: 上一次的结果
-    """
-    return ...
+        """
+        通常为 回写消息+通知消息
+        :param task: 任务
+        :param receiver: 接收者
+        :param exception: 异常
+        :param env: 环境变量
+        :param arg: 参数
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
 
-  @abstractmethod
-  async def run(self, *,
-                task: "TaskHeader", receiver: "TaskHeader.Location",
-                arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                ):
-    """
-    处理函数并返回回写结果
-    :param task: 任务
-    :param receiver: 接收者
-    :param arg: 参数
-    :param env: 环境变量
-    :param pending_task: 任务批次
-    :param refer_llm_result: 上一次的结果
-    """
-    return ...
+    @abstractmethod
+    async def callback(self,
+                       task: "TaskHeader", receiver: "TaskHeader.Location",
+                       env: dict,
+                       arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
+                       ):
+        """
+        运行成功会调用此函数
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
+
+    @abstractmethod
+    async def run(self, *,
+                  task: "TaskHeader", receiver: "TaskHeader.Location",
+                  arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+                  ):
+        """
+        处理函数并返回回写结果
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
 ```
 
 ::: warning
@@ -643,6 +643,10 @@ name = "llmbot_plugin_bilisearch"
 ### 🔧 ️包管理说明
 
 每次升级时，都要更新 `version` 字段。
+
+每次变更依赖或修改依赖文件 `pyproject.toml`，都要运行 `poetry lock` 命令更新依赖锁。
+
+你可以在发布前运行 `poetry install` 命令检查并安装当前库到本地环境。
 
 ### ⚙️ CI自动发布
 

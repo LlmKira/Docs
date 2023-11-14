@@ -236,127 +236,127 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field, PrivateAttr
 
 if TYPE_CHECKING:
-  pass
+    pass
 
 
 class BaseTool(ABC, BaseModel):
-  """
-  基础工具类，所有工具类都应该继承此类
-  """
+    """
+    基础工具类，所有工具类都应该继承此类
+    """
 
-  __slots__ = ()
-  silent: bool = Field(False, description="Send message before running")
-  function: "Function" = Field(..., description="func")
-  keywords: List[str] = Field([], description="keywords match")
-  pattern: Optional[re.Pattern] = Field(None, description="re match")
-  require_auth: bool = Field(False, description="need user confirm")
-  repeatable: bool = Field(False, description="can be call repeatable")
-  deploy_child: Literal[0, 1] = Field(1, description="if 0 will not roll next function")
-  require_auth_kwargs: dict = {}
-  env_required: List[str] = Field([], description="token_env like os,ALSO NEED env_prefix")
-  env_prefix: str = Field("", description="prefix of env,finally will be prefix+env_name")
-  file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
-  extra_arg: Dict[Any, Any] = Field({}, description="extra arg, nothing")
-  __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
+    __slots__ = ()
+    silent: bool = Field(False, description="Send message before running")
+    function: "Function" = Field(..., description="func")
+    keywords: List[str] = Field([], description="keywords match")
+    pattern: Optional[re.Pattern] = Field(None, description="re match")
+    require_auth: bool = Field(False, description="need user confirm")
+    repeatable: bool = Field(False, description="can be call repeatable")
+    deploy_child: Literal[0, 1] = Field(1, description="if 0 will not roll next function")
+    require_auth_kwargs: dict = {}
+    env_required: List[str] = Field([], description="token_env like os,ALSO NEED env_prefix")
+    env_prefix: str = Field("", description="prefix of env,finally will be prefix+env_name")
+    file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
+    extra_arg: Dict[Any, Any] = Field({}, description="extra arg, nothing")
+    __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
 
-  # exp: re.compile(r"file_id=([a-z0-9]{8})")
+    # exp: re.compile(r"file_id=([a-z0-9]{8})")
 
-  @final
-  def get_os_env(self, env_name):
-    """
-    获取 PLUGIN_+ 公共环境变量
-    """
-    env = os.getenv("PLUGIN_" + env_name, None)
-    return env
+    @final
+    def get_os_env(self, env_name):
+        """
+        获取 PLUGIN_+ 公共环境变量
+        """
+        env = os.getenv("PLUGIN_" + env_name, None)
+        return env
 
-  def env_help_docs(self, empty_env: List[str]) -> str:
-    """
-    Help documentation for environment variables
-    :param empty_env: 未被配置的环境变量列表
-    :return: 帮助文档/警告
-    """
-    assert isinstance(empty_env, list), "empty_env must be list"
-    return "You need to configure ENV to start use this tool"
+    def env_help_docs(self, empty_env: List[str]) -> str:
+        """
+        Help documentation for environment variables
+        :param empty_env: 未被配置的环境变量列表
+        :return: 帮助文档/警告
+        """
+        assert isinstance(empty_env, list), "empty_env must be list"
+        return "You need to configure ENV to start use this tool"
 
-  @abstractmethod
-  def pre_check(self) -> Union[bool, str]:
-    """
-    Pre-check, if it is not qualified, return False, otherwise return True
-    """
-    return ...
+    @abstractmethod
+    def pre_check(self) -> Union[bool, str]:
+        """
+        Pre-check, if it is not qualified, return False, otherwise return True
+        """
+        return ...
 
-  @abstractmethod
-  def func_message(self, message_text, **kwargs):
-    """
-    If qualified, return message, otherwise return None, indicating that it is not processed.
-    
-    Determines whether this function is added to the selection. Can be customized freely
-    
-    message_text: 消息文本
-    message_raw: 消息原始数据 `RawMessage`
-    """
-    # message_raw=kwargs.get("message_raw")
-    for i in self.keywords:
-      if i in message_text:
-        return self.function
-    # 正则匹配
-    if self.pattern:
-      match = self.pattern.match(message_text)
-      if match:
-        return self.function
-    return None
+    @abstractmethod
+    def func_message(self, message_text, **kwargs):
+        """
+        If qualified, return message, otherwise return None, indicating that it is not processed.
+        
+        Determines whether this function is added to the selection. Can be customized freely
+        
+        message_text: 消息文本
+        message_raw: 消息原始数据 `RawMessage`
+        """
+        # message_raw=kwargs.get("message_raw")
+        for i in self.keywords:
+            if i in message_text:
+                return self.function
+        # 正则匹配
+        if self.pattern:
+            match = self.pattern.match(message_text)
+            if match:
+                return self.function
+        return None
 
-  @abstractmethod
-  async def failed(self,
-                   task: "TaskHeader", receiver: "TaskHeader.Location",
-                   exception, env: dict,
-                   arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                   ):
-    """
-    Run this function if the function fails
-    Write back the message and notify the message
-    :param task: 任务
-    :param receiver: 接收者
-    :param exception: 异常
-    :param env: 环境变量
-    :param arg: 参数
-    :param pending_task: 任务批次
-    :param refer_llm_result: 上一次的结果
-    """
-    return ...
-
-  @abstractmethod
-  async def callback(self,
+    @abstractmethod
+    async def failed(self,
                      task: "TaskHeader", receiver: "TaskHeader.Location",
-                     env: dict,
-                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
+                     exception, env: dict,
+                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
                      ):
-    """
-    Run this function if the function is successful
-    :param task: 任务
-    :param receiver: 接收者
-    :param arg: 参数
-    :param env: 环境变量
-    :param pending_task: 任务批次
-    :param refer_llm_result: 上一次的结果
-    """
-    return ...
+        """
+        Run this function if the function fails
+        Write back the message and notify the message
+        :param task: 任务
+        :param receiver: 接收者
+        :param exception: 异常
+        :param env: 环境变量
+        :param arg: 参数
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
 
-  @abstractmethod
-  async def run(self, *,
-                task: "TaskHeader", receiver: "TaskHeader.Location",
-                arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                ):
-    """
-    Run this function
-    :param task: 任务
-    :param receiver: 接收者
-    :param arg: 参数
-    :param env: 环境变量
-    :param pending_task: 任务批次
-    :param refer_llm_result: 上一次的结果
-    """
-    return ...
+    @abstractmethod
+    async def callback(self,
+                       task: "TaskHeader", receiver: "TaskHeader.Location",
+                       env: dict,
+                       arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
+                       ):
+        """
+        Run this function if the function is successful
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
+
+    @abstractmethod
+    async def run(self, *,
+                  task: "TaskHeader", receiver: "TaskHeader.Location",
+                  arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
+                  ):
+        """
+        Run this function
+        :param task: 任务
+        :param receiver: 接收者
+        :param arg: 参数
+        :param env: 环境变量
+        :param pending_task: 任务批次
+        :param refer_llm_result: 上一次的结果
+        """
+        return ...
 ```
 
 ::: warning
@@ -672,6 +672,12 @@ You **must register** an EntryPoint to be retrieved by the bot launcher.
 ### 🔧 ️Package management instructions
 
 Every time you upgrade, update the `version` field.
+
+Every time you change a dependency or modify `pyproject.toml` file, run the `poetry lock` command to update the dependency
+lock.
+
+You can run the `poetry install` command to check and install the current libraries into your local environment before
+publishing.
 
 ### ⚙️ CI automatic release
 
