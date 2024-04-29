@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as a}from"./chunks/framework.D0kgyeKq.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"dev/arch.md","filePath":"dev/arch.md","lastUpdated":1714398384000}'),r={name:"dev/arch.md"};function c(o,s,d,n,p,_){return a(),t("div")}const f=e(r,[["render",c]]);export{m as __pageData,f as default};
