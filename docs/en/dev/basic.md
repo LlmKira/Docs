@@ -504,7 +504,7 @@ You **must register** the EntryPoint for the plugin to be detected by the bot's 
 Login to the PyPi repository, create a new package, and then use CI/CD in the template repository to automatically
 publish it.
 
-![pypi](/docs/_assert/pypi.png)
+![pypi](https://github.com/LlmKira/Docs/blob/main/docs/_assert/pypi.png?raw=true)
 
 When you configure it like this, CI can automatically publish the package without a key.
 

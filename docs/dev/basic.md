@@ -531,7 +531,7 @@ bilisearch = "llmbot_plugin_bilisearch"
 
 登陆 PyPi 仓库，创建一个新的包，然后使用模板仓库的 CI/CD 自动发布。
 
-![pypi](/docs/_assert/pypi.png)
+![pypi](https://github.com/LlmKira/Docs/blob/main/docs/_assert/pypi.png?raw=true)
 
 当你这样配置时，CI 可以无密钥自动发布包。
 
