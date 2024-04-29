@@ -102,7 +102,7 @@ function sidebarDev() {
             text: '插件开发指南',
             items: [
                 {text: '快速开发', link: '/dev/basic'},
-                {text: '中间件使用', link: '/dev/middleware'},
+                // {text: '中间件使用', link: '/dev/middleware'},
             ]
         },
         {
@@ -143,7 +143,7 @@ function sidebarDevEn() {
             items: [
                 {text: 'Fast Dev', link: '/en/dev/basic'},
                 // Use middleware
-                {text: 'Middleware', link: '/en/dev/middleware'},
+                // {text: 'Middleware', link: '/en/dev/middleware'},
             ]
         },
         {

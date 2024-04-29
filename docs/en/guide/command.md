@@ -1,47 +1,18 @@
 # Command Guide
 
-## Intro
-
-```text
-     /help-HELP YOURSELF
-     /chat - Chat with me :)
-     /task-Function enable
-     /ask - Chat with func_disable
-     /tool-Tool list
-     /clear - Clear Chat
-     /auth - Auth a task
-Private Chat:
-     /bind-RSS
-     /unbind-RSS
-     /set_endpoint - <apikey>#<endpoint>
-     /clear_endpoint - Clear endpoint and key
-     /env - configuration variables, use as shell
-     /token - bind your token
-     /token_clear - clear your token
-     /func_ban - ban function
-     /func_unban - unban function
-```
-
-
 ## Command table
 
 ```shell
-clear - erase chat history
-help - show docs
-chat - chat
-task - chat with function_enable
-ask - chat with function_disable
-tool - list all functions
-set_endpoint - set private key and endpoint
-clear_endpoint - erase private key and endpoint
-auth - auth a function
-env - env for function
-token - bind token
-token_clear - clear token binding
-func_ban - ban a function
-func_unban - unban a function
-bind - Bind rss platforms
-unbind - Unbind rss platforms
+clear - Deletes chat records
+login - Login to the bot
+help - Displays documentation
+chat - Conversation
+task - Use a function to converse
+ask - Disable function-based conversations
+tool - Lists all functions
+auth - Authorize a function
+env - Environment variables of the function
+learn - Learn your instructions, /learn reset to clear
 
 ```
 
@@ -75,9 +46,3 @@ required by the plugin through this command.
 For example `/env VAR=551;VAR2=asdasd;VAR3="1231"`
 
 All keys(name) will be formatted and upper.
-
-### 🍭 Binding and unbinding
-
-This command is just a subscription command, used to subscribe to RSS messages.
-
-In order to reflect the cross-platform characteristics, it **actually has no effect**.

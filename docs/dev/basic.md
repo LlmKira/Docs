@@ -1,84 +1,31 @@
 # 📝 插件开发指南
 
+![Func](https://raw.githubusercontent.com/LlmKira/.github/main/llmbot/func_call_big.png)
+
 > 此过程可能会过时，推荐直接从模板库开始开发。也可以参考内部插件 `llmkira/extra/`。
 
-本文所用示例插件模板库: https://github.com/LlmKira/llmbot_plugin_bilisearch
-
-OpenaiBot 为第三方插件提供了 OPENAPI 接口注册系统，本文将介绍如何建造一个插件。
+OpenaiBot 为第三方插件提供了 OPENAPI
+接口注册系统和模板仓库，插件模板: https://github.com/LlmKira/llmbot_plugin_bilisearch ，请修改此项目模板进行快速开发。
 
 ::: tip
 因为插件机制是参考 `Nonebot` 实现，故插件开发和 NoneBot Plugin 近似。
 :::
 
-## 📌 结构规范
+通过上传到 PyPi 仓库，您可以将插件分享给其他用户。
 
-```
-基础结构示例
-├── LICENSE
-├── llmbot_plugin_bilisearch
-│       └─ __init__.py
-├── poetry.lock
-├── pyproject.toml
-└── README.md
-```
-
-`README.md` 是项目的说明文件。
-
-`pyproject.toml`
-是项目的包信息文件，包含包的名称，依赖,和作者，主页等配置。查看[详细选项](https://python-poetry.org/docs/pyproject/)。
-
-`poetry.lock`
-是项目依赖锁文件，锁定仓库依赖版本，让所有协作者都使用统一版本依赖。此文件在更新依赖版本时候，需要使用 `poetry lock` 命令更新。
-
-`llmbot_plugin_bilisearch` 是示例中插件的主体，内含插件的真正执行文件和资源。
-
-::: tip
-因为 pypi 不允许上传大文件，故插件打包文件夹不应上传较大资源文件。
-:::
-
-`LICENSE` 是项目的开源协议文件，具有一定法律效力。选择协议可以参考 [知乎问题](https://www.zhihu.com/question/19568896)。
-
-### 🔗 导入验证
+## 🔗 基础知识
 
 首先确认您安装了一个代码编辑器，Python 环境(版本大于3.9)。在 Shell控制台 或 CMD命令行 输入 `python -v` 检查或查看版本。
 
-#### 下载所需的工具
+### PDM 环境管理使用
 
 ```shell
 pip install llmkira
-pip install poetry
+pip install pdm
+pdm add <package>
+pdm install
+
 ```
-
-`llmkira`
-是机器人主体文件的打包集合，插件需要导入其中的类进行使用。这里有导入的[示例](https://github.com/LlmKira/llmbot_plugin_bilisearch/blob/main/llmbot_plugin_bilisearch/__init__.py)。
-
-`poetry` 是一个广泛使用的依赖管理和打包的工具。[基础命令介绍](https://python-poetry.org/docs/basic-usage/)。
-
-::: info 常用命令
-
-- `poetry init` 创建一个 `pyproject.toml` 文件
-- `poetry lock` 更新依赖锁
-- `poetry add <name>` 添加依赖
-- `poetry install` 安装当前库到本地环境
-- `poetry build` 构建库
-- `poetry publish` 发布库
-  :::
-
-在 Github 新建项目并拉取本地。
-
-用代码编辑器打开本地项目文件夹，再建立插件文件夹，在当前项目位置打开 Shell 输入 `poetry init` 建立基础包结构。
-
-输入所需信息完善 `pyproject.toml` 文件。
-
-使用 `poetry add <some>` 命令或者编辑配置文件添加依赖。
-
-```toml
-[tool.poetry.dependencies]
-python = "^3.9"
-bilibili-api-python = "^16.1.0"
-```
-
-至此，项目基本结构已经建立。
 
 ## 📦 开发流程
 
@@ -88,104 +35,73 @@ bilibili-api-python = "^16.1.0"
 
 ### 🔧 测试环境
 
-您可以将插件放入项目下 `Openaibot/llmkira/extra/plugins` 来本地挂载测试。
+您可以将插件文件夹放入 `Openaibot/llmkira/extra/plugins` 下，程序会自动加载。
 
-或使用 poetry 本地安装挂载。
+### 🍬 安装 llmkira 框架
 
 ```shell
-cd your_plugin_path
-poetry install
-
+pdm add llmkira --dev
+# 这样装不影响机器人
 ```
 
-### 🪣 添加变量与验证
+### 🪣 了解架构验证
 
-**下面的代码必须放进开头进行架构版本验证。**
+当插件系统有大变动时，您需要更新插件架构版本。
+
+下面的代码演示了插件启动时的架构验证。
 
 ```python
-__package_name__ = "llmbot_plugin_bilisearch"
 __plugin_name__ = "search_in_bilibili"
-__openapi_version__ = ...  # refer https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/__init__.py#L27
+__openapi_version__ = "20240416"
 
-from llmkira.sdk.func_calling import verify_openapi_version
+from llmkira.sdk.tools import verify_openapi_version  # noqa: E402
 
-verify_openapi_version(__package_name__, __openapi_version__)  # 验证 // [!code hl]
-
+verify_openapi_version(__plugin_name__, __openapi_version__)  # 验证 // [!code hl]
 ```
 
-### ⚙️ 定义函数类
+`openapi_version` 参数记录当前同步版本，如果宿主框架更新，Plugin 可能需要同步此参数以支持新接口。
 
-#### 🧩 从 pydantic 2.0 模型创建函数类
+::: tip 什么时候需要更新我的插件？
+OpenAPI 组件会设定哪些版本的插件可以被加载，如果您的插件版本过低，会报错，届时您将收到用户的 Issue。
+:::
+
+### ⚙️ 了解如何声明一个工具
+
+很简单。我们从 pydantic 直接继承 `BaseModel` 类，然后在类中定义参数。底层代码会直接从类中构建工具的 Schema。
 
 ```python
 from llmkira.sdk.schema import Function
 from pydantic import BaseModel, ConfigDict, field_validator, Field
+from typing import Optional
 
-__plugin_name__ = "search_in_bilibili"
 
-
-# function verification class
-class Alarm(BaseModel):
+class TOOL_NAME(BaseModel):
     """
-    Set a timed reminder (only for minutes)
+    TOOL DESCRIPTION
     """
-    delay: int = Field(..., description="The delay time, in minutes")
-    content: str = Field(..., description="reminder content")
-    model_config = ConfigDict(extra="allow")
+    delay: int = Field(..., description="Arguments description")
+    content: str = Field(..., description="Arguments description")
+    option_content: Optional[str] = Field(..., description="Arguments description")
 
     @field_validator("delay")
     def delay_validator(cls, v):
         if v < 0:
             raise ValueError("delay must be greater than 0")
         return v
-
-
-function = Function.parse_from_pydantic(schema_model=Alarm, plugin_name=__plugin_name__)
-
-# Function(name='Alarm', description='Set a timed reminder (only for minutes)', parameters=Parameters(type='object', properties={'delay': {'description': 'The delay time, in minutes', 'title': 'Delay', 'type': 'integer'}, 'content': {'description': 'reminder content', 'title': 'Content', 'type': 'string'}}, required=['content', 'delay']))
 ```
 
-#### 🧲 单独创建函数类
+#### 🩼 哪里会用到这个类？
 
-```python
-__plugin_name__ = "search_in_bilibili"
+程序会把LLM生产的函数参数传递给这个类，然后进行实例化。
 
-from llmkira.sdk.endpoint.openai import Function
-
-bilibili = Function(
-    name=__plugin_name__,
-    description="Search videos on bilibili.com(哔哩哔哩)",
-).update_config(
-    config=Function.FunctionExtra(
-        system_prompt="🔍Searching on google.com...",
-    )
-)
-bilibili.add_property(
-    property_name="keywords",
-    property_description="Keywords entered in the search box",
-    property_type="string",
-    required=True
-)
-```
-
-这里的信息会被提交给LLM使用，你可以运用 `Prompt 工程` 来改进他们。
-
-`required` 属性不一定有效。
-
-### 🩼 添加函数校验类
-
-在实际情况中，即使您的函数定义了参数 required=True，但是返回也可能是 None，故我们需要一个参数校验类来检查参数。
-
-借助于 [pydantic](https://pydantic-docs.helpmanual.io/) ，我们可以很方便的实现参数校验。
+借助于 [pydantic](https://pydantic-docs.helpmanual.io/) ，我们可以很方便的实现准确方便的参数校验。
 
 ```python
 from pydantic import BaseModel, ConfigDict
 
 
 class Bili(BaseModel):  # 参数 // [!code focus:5]
-
     keywords: str
-
     model_config = ConfigDict(extra="allow")
 
 
@@ -197,204 +113,185 @@ except Exception as e:
     pass
 ```
 
-请您在 工具类 的 `run` 方法中使用 pydantic 做参数校验。
-
 ### ⚓️ 功能函数
 
-功能函数就是一个实现功能的函数。随便你怎么写。
+功能函数不是必要的，我们只是需要在 插件的run方法 中处理传递进来的参数。
 
-此函数自由发挥，但是之后的OPENAPI架构需要匹配一个错误装饰器来计数错误。
+#### 🔨 错误禁用
 
-故推荐编写一个主函数便于后续升级。
-
-### 🍭 工具类
-
-所有工具类必须继承 [BaseTool](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L14)。
-
-具体写法见下：
+使用这个装饰器来监测函数的错误。错误次数被记录过多后，此函数插件就不被调用了。
 
 ```python
-import os
-import re
-from abc import abstractmethod, ABC
-from typing import Optional, Dict, Any, List, Union, final, Literal
-from typing import TYPE_CHECKING
+from llmkira.sdk.openapi.fuse import resign_plugin_executor
 
-from pydantic import BaseModel, Field, PrivateAttr
 
-if TYPE_CHECKING:
+@resign_plugin_executor(function=search, handle_exceptions=(Exception,))
+def search_in_bilibili(arg: dict, **kwargs):
     pass
-
-
-class BaseTool(ABC, BaseModel):
-    """
-    基础工具类，所有工具类都应该继承此类
-    """
-
-    __slots__ = ()
-    silent: bool = Field(False, description="是否静默")
-    function: "Function" = Field(..., description="功能")
-    keywords: List[str] = Field([], description="关键词")
-    pattern: Optional[re.Pattern] = Field(None, description="正则匹配")
-    require_auth: bool = Field(False, description="是否需要授权")
-    repeatable: bool = Field(False, description="是否可重复使用")
-    deploy_child: Literal[0, 1] = Field(1, description="如果为0，终结于此链点，不再向下传递")
-    require_auth_kwargs: dict = {}
-    env_required: List[str] = Field([], description="环境变量要求,ALSO NEED env_prefix")
-    env_prefix: str = Field("", description="环境变量前缀")
-    file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
-    extra_arg: Dict[Any, Any] = Field({}, description="额外参数")
-    __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
-
-    # exp: re.compile(r"file_id=([a-z0-9]{8})")
-
-    @final
-    def get_os_env(self, env_name):
-        """
-        获取 PLUGIN_+ 公共环境变量
-        """
-        env = os.getenv("PLUGIN_" + env_name, None)
-        return env
-
-    def env_help_docs(self, empty_env: List[str]) -> str:
-        """
-        环境变量帮助文档
-        :param empty_env: 未被配置的环境变量列表
-        :return: 帮助文档/警告
-        """
-        assert isinstance(empty_env, list), "empty_env must be list"
-        return "You need to configure ENV to start use this tool"
-
-    @abstractmethod
-    def pre_check(self) -> Union[bool, str]:
-        """
-        预检查，如果不合格则返回 False，合格则返回 True
-        返回字符串表示不合格，且有原因
-        """
-        return ...
-
-    @abstractmethod
-    def func_message(self, message_text, **kwargs):
-        """
-        如果合格则返回message，否则返回None，表示不处理
-        决定了此函数是否被添加进备选中。可以自由定制
-        message_text: 消息文本
-        message_raw: 消息原始数据 `RawMessage`
-        """
-        # message_raw=kwargs.get("message_raw") # 获取原始消息而不是文本内容
-        for i in self.keywords:
-            if i in message_text:
-                return self.function
-        # 正则匹配
-        if self.pattern:
-            match = self.pattern.match(message_text)
-            if match:
-                return self.function
-        return None
-
-    @abstractmethod
-    async def failed(self,
-                     task: "TaskHeader", receiver: "TaskHeader.Location",
-                     exception, env: dict,
-                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                     ):
-        """
-        通常为 回写消息+通知消息
-        :param task: 任务
-        :param receiver: 接收者
-        :param exception: 异常
-        :param env: 环境变量
-        :param arg: 参数
-        :param pending_task: 任务批次
-        :param refer_llm_result: 上一次的结果
-        """
-        return ...
-
-    @abstractmethod
-    async def callback(self,
-                       task: "TaskHeader", receiver: "TaskHeader.Location",
-                       env: dict,
-                       arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
-                       ):
-        """
-        运行成功会调用此函数
-        :param task: 任务
-        :param receiver: 接收者
-        :param arg: 参数
-        :param env: 环境变量
-        :param pending_task: 任务批次
-        :param refer_llm_result: 上一次的结果
-        """
-        return ...
-
-    @abstractmethod
-    async def run(self, *,
-                  task: "TaskHeader", receiver: "TaskHeader.Location",
-                  arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                  ):
-        """
-        处理函数并返回回写结果
-        :param task: 任务
-        :param receiver: 接收者
-        :param arg: 参数
-        :param env: 环境变量
-        :param pending_task: 任务批次
-        :param refer_llm_result: 上一次的结果
-        """
-        return ...
 ```
 
-::: warning
-`callback`  函数暂时没有任何作用。
-:::
+### 🍭 插件主体
 
-构建关键词参数时请考虑国际化，且尽量避开公共关键词，禁止使用单字关键词。
+你需要继承 `BaseTool` 类来实现主体，在插件运行生命周期中，我们会调用 `run` 方法。如果失败了，我们会调用 `failed` 方法。
+
+run 方法你需要做的是处理传递进来的参数，然后向消息队列通信。
+
+```python
+async def run(
+        self,
+        task: "TaskHeader",
+        receiver: "Location",
+        arg: dict,
+        env: dict,
+        pending_task: "ToolCall",
+        refer_llm_result: dict = None,
+):
+    """
+    处理message，返回message
+    """
+
+    _set = BiliBiliSearch.model_validate(arg)
+    _search_result = await search_on_bilibili(_set.keywords)
+    _meta = task.task_sign.reprocess(
+        plugin_name=__plugin_name__,
+        tool_response=[
+            ToolResponse(
+                name=__plugin_name__,
+                function_response=f"SearchData: {_search_result},Please give reference link when use it.",
+                tool_call_id=pending_task.id,
+                tool_call=pending_task,
+            )
+        ]
+    )
+    await Task.create_and_send(
+        queue_name=receiver.platform,
+        task=TaskHeader(
+            sender=task.sender,  # 继承发送者
+            receiver=receiver,  # 因为可能有转发，所以可以单配
+            task_sign=_meta,
+            message=[],
+        ),
+    )
+```
 
 ::: danger
 继承 `BaseTool` 类后，**禁止定义 `__init__`**
 :::
 
-#### 🎳 动态激活
+### 🎳 动态激活
 
-每次对话送达后，会重新根据用户语料构建新的函数表。 插件选择器会根据字符匹配确定哪些是候选函数， `keywords` 和 `pattern`
-参数决定了此次对话是否候选此函数。
+为了能提升插件的容纳量，我们提供了动态激活插件的功能。根据内容和用户决定此插件是否激活。
+每次对话送达后，会重新根据用户语料构建新的函数表，插件选择器会根据字符匹配确定哪些是候选函数。
 
-`func_message` 函数决定了是否激活此函数。
+`func_message` 函数决定了是否激活此函数，如果激活则返回函数，否则返回 `None`。
+如果你不重写此函数，插件会默认使用 `keywords` 和 `pattern` 类属性进行匹配。
+你可以自由重写此函数。
 
-`file_match_required` 被定义后，会在文件消息中进行匹配，匹配成功则激活此函数，否则禁用！
-
-`deploy_child` 参数决定了此函数是否继续向下传递（结束标记）。
-
-每次递归，上次的函数会被忽略，如果希望函数可以重复使用，可以设置 `repeatable` 属性。
-
-默认链递归深度为 6，通过 `limit_child` 属性定义。**插件禁止重新定义此参数。**
+```python
+@abstractmethod
+def func_message(self, message_text, message_raw, address, **kwargs):
+    """
+    If the message_text contains the keyword, return the function to be executed, otherwise return None
+    :param message_text: 消息文本
+    :param message_raw: 消息原始数据 `EventMessage`
+    :param address: 消息地址 `tuple(sender,receiver)`
+    :param kwargs :
+    message_raw: 消息原始数据 `EventMessage`
+    address: 消息地址 `tuple(sender,receiver)`
+    """
+    for word in self.keywords:
+        if word in message_text:
+            return self.function
+    # Regrex Match
+    if self.pattern:
+        match = self.pattern.match(message_text)
+        if match:
+            return self.function
+    _ignore = kwargs
+    return None
+```
 
 ::: tip
 新对话链被启动时，会在第一个节点继承上一个对话链的函数属性。
 :::
 
-#### 🧃 Env 声明授权系统
+#### 🎳 文件激活
 
-- 声明
-
-设置 `env_required` 属性，声明需要的常量。
-
-- 设置文档
-
-子类重写 `env_help_docs` 函数，返回帮助文档。此文档会在缺失变量时调用，被发送给用户。
+当消息包含文件时，插件会按照文件名正则表达式进行匹配。如果匹配成功，插件会被激活。
 
 ```python
-async def run(self,
-              task: "TaskHeader", receiver: "TaskHeader.Location",
-              arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-              ):
-    print(env)
+class BaseTool(BaseModel):
+    file_match_required: Optional[re.Pattern] = Field(
+        None, description="re.compile 文件名正则"
+    )
+    """File name regular expression to use the tool, exp: re.compile(r"file_id=([a-z0-9]{8})")"""
+```
+
+::: tip
+如果你需要使用文件，请定义在工具参数定义 `file_key` 字段，**文件由 LLM 传递给你**。你通过文件 ID 获取文件。
+:::
+
+### 🧃 虚拟环境变量
+
+- 声明是否需要环境变量
+
+重写 `require_auth` 函数，返回 `True` 或 `False`。
+
+```python
+class BaseTool(BaseModel):
+    def require_auth(self, env_map: dict) -> bool:
+        """
+        Check if authentication is required
+        """
+        return True
+```
+
+- 声明环境变量前缀和必要变量
+
+````python
+class BaseTool(BaseModel):
+    env_required: List[str] = Field([], description="环境变量要求,ALSO NEED env_prefix")
+    """Pre-required environment variables, you should provide env_prefix"""
+    env_prefix: str = Field("", description="环境变量前缀")
+    """Environment variable prefix"""
+````
+
+- 配置文档
+
+重写 `env_help_docs` 函数，返回帮助文档。此文档会在缺失变量时被发送给用户，附加在权限申请板块。
+
+```python
+@classmethod
+def env_help_docs(cls, empty_env: List[str]) -> str:
+    """
+    Provide help message for environment variables
+    :param empty_env: The environment variable list that not configured
+    :return: The help message
+    """
+    message = ""
+    return message
+```
+
+- 获取系统环境变量
+
+调用 `get_os_env` 函数，获取特定前缀 `PLUGIN_` 的系统环境变量。
+这个变量应该由部署者约定。
+
+```python
+@final
+def get_os_env(self, env_name):
+    """
+    Get environment variables from os.environ
+    """
+    env = os.getenv("PLUGIN_" + env_name, None)
+    return env
 ```
 
 ### 🥄 注册元信息
 
-核心类 `PluginMetadata`
-，您可以在 [这里](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84) 查看它的组成结构。
+实例化核心类`PluginMetadata`
+来声明所有的工具，您可以在 [这里](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84)
+查看它的组成结构。
 
 ```python
 # 名称
@@ -407,10 +304,10 @@ PluginMetadata, FuncPair = ...  # import
 __plugin_meta__ = PluginMetadata(
     name=__plugin_name__,
     description="Search videos on bilibili.com(哔哩哔哩)",
-    usage="search <keywords>",
-    openapi_version=__openapi_version__,  # OPENAPI 版本 // [!code ++:3]
+    usage="bilibili search <keywords>",
+    openapi_version=__openapi_version__,
     function={
-        FuncPair(function=bilibili, tool=BiliBiliSearch)  # 函数类和工具类
+        FuncPair(function=class_tool(BiliBiliSearch), tool=BiliBiliSearch)
     }
 )
 
@@ -419,18 +316,77 @@ __plugin_meta__ = PluginMetadata(
 ::: tip
 
 `FuncPair` 绑定 `function` 函数类和 `tool` 工具类。
+
+`class_tool` 函数用于将函数类转换为工具类。
 :::
 
-`openapi_version` 参数记录当前同步版本，如果宿主框架更新，Plugin 可能需要同步此参数以支持新接口。
+### 🍟 Hook 钩子
 
-::: tip 什么时候需要更新我的插件？
-OpenAPI 组件会设定哪些版本的插件可以被加载，如果您的插件版本过低，会报错，届时您将收到用户的 Issue。
-:::
+Hook 是一个用于拦截消息的类，可以在发送器和接收器之间进行消息转换处理。
+
+`trigger_hook` 函数用于触发钩子，`hook_run` 函数用于处理消息。
+
+下面是一个 `VoiceHook` 钩子的实例。
+
+```python
+@resign_hook()
+class VoiceHook(Hook):
+    trigger: Trigger = Trigger.RECEIVER
+
+    async def trigger_hook(self, *args, **kwargs) -> bool:
+        platform_name: str = kwargs.get("platform")  # noqa
+        messages: List[EventMessage] = kwargs.get("messages")
+        locate: Location = kwargs.get("locate")
+        for message in messages:
+            if not check_string(message.text):
+                return False
+        have_env = await EnvManager(locate.uid).get_env("VOICE_REPLY_ME", None)
+        # logger.warning(f"Voice Hook {have_env}")
+        if have_env is not None:
+            return True
+        return False
+
+    async def hook_run(self, *args, **kwargs):
+        logger.debug(f"Voice Hook {args} {kwargs}")
+        platform_name: str = kwargs.get("platform")  # noqa
+        messages: List[EventMessage] = kwargs.get("messages")
+        locate: Location = kwargs.get("locate")
+        for message in messages:
+            if not check_string(message.text):
+                return args, kwargs
+            parsed_text = parse_sentence(message.text)
+            if not parsed_text:
+                return args, kwargs
+            reecho_api_key = await EnvManager(locate.uid).get_env("REECHO_API_KEY", None)
+            voice_data = await request_cn(
+                message.text, reecho_api_key=reecho_api_key
+            )
+            if voice_data is not None:
+                ogg_data = Ffmpeg.convert(
+                    input_c="mp3", output_c="ogg", stream_data=voice_data, quiet=True
+                )
+                file = await File.upload_file(
+                    creator=locate.uid, file_name="speech.ogg", file_data=ogg_data
+                )
+                file.caption = message.text
+                message.text = ""
+                message.files.append(file)
+            else:
+                logger.error(f"Voice Generation Failed:{message.text}")
+        return args, kwargs
+
+```
+
+`hook_run` 函数是轮换处理消息的，出错会自动跳过。参数传入后，返回参数会被传递给下一个钩子。
+
+依据钩子，我们可以为输出消息转换为语音，或者检查输入文本后添加一些附件。
 
 ### 🥥 前验触发器
 
 使用这个装饰器来阻止或通过特定符合条件的响应。
 用于敏感词过滤，特殊语段无命令主动响应，动态配置响应扳机，拒绝某些用户回答等场景。
+
+下面是 `拒绝Telegram平台的消息` 的扳机实例。当返回 `True` 时，将会执行 `action` 参数的动作。
 
 ```jupyterpython
 @resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
@@ -445,20 +401,9 @@ async def on_chat_message(message: str, uid: str, **kwargs):
 
 函数返回 `True` 则说明需要前置动作。
 
-### 🔨 错误禁用
-
-使用这个装饰器来监测行动函数的错误。错误次数被记录过多后，此函数插件就不被调用了。
-
-```python
-from llmkira.sdk.openapi.fuse import resign_plugin_executor
-
-
-@resign_plugin_executor(function=search, handle_exceptions=(Exception,))
-def search_in_bilibili(arg: dict, **kwargs):
-    pass
-```
-
-注意这是一个同步装饰器，如果您的函数是异步的，可以调用 utils.sync 运行异步函数。
+::: tip
+`Trigger` 是一个pydantic类，请自行查阅源码查看动作。
+:::
 
 ### 🍩 路由通信
 
@@ -466,207 +411,158 @@ def search_in_bilibili(arg: dict, **kwargs):
 
 Location 继承过来即可。因为你不知道其他用户是谁。
 
-#### 📕 通信模式
+### 🍬 通信模式
 
-`Meta` 有如下内部维护的构造函数：
+你可以通过消息队列向用户发送消息。
 
-::: danger
+[源码地址](https://github.com/LlmKira/Openaibot/blob/main/llmkira/task/schema.py)
 
-请注意，`callback` 参数是一个列表，您需要使用 **一个或多个** `TaskHeader.Meta.Callback.create`构建的对象填充此列表。
-:::
+传入的节点带有地址参数，你可以直接使用。
 
-##### 📍`reply_notify` 通知回复
-
-仅仅通知，不回写记忆记录，也不触发任何处理。
-
-用于错误通知或单向通知。
-
-*适用消息内容举例*
-
-```text
-发生了错误，您没有配置插件需要的常量。
-```
-
-##### 📍`reply_raw` 回复不可读内容
-
-此消息会被回写进记忆记录，作为被查询的对象，由LLM处理后代为答复。比如搜索，数据集查询结果。
-
-*适用消息内容举例*
-
-```json5
-{
-  "query": "查询内容",
-  "item": [
-    "查询结果1",
-    "查询结果2",
-    "查询结果3"
-  ]
-}
-```
-
-::: warning
-**`reply_raw` 不能回复文件消息。**
-:::
-
-##### 📍`reply_message` 回复可读内容/文件消息
-
-此消息适用于执行回复。回复人类可读的内容。回写记忆记录，直接回复。
-
-*适用消息内容举例*
-
-```text
-查询完毕，您的原神账号为：123456789
-```
-
-```
-文件消息
-```
-
-#### 📕 自定义通信模式
-
-```python
-__plugin_name__ = ...
-task = ...
-receiver = ...
-_search_result = ...
-Task, TaskHeader, RawMessage = ...
-
-pending_task = ...
-_meta = task.task_meta.child(__plugin_name__)  # 自定义 // [!code focus:7]
-_meta.callback_forward = True
-_meta.callback_forward_reprocess = False
-_meta.direct_reply = False
-_meta.write_back = True
-_meta.release_chain = True
-_meta.callback = [
-    TaskHeader.Meta.Callback.create(
-        name=__plugin_name__,
-        function_response=f"Run Failed",
-        tool_call_id=pending_task.get_batch_id()
-    )
-]
+````python
+from llmkira.task import Task, TaskHeader  # noqa: E402
+from llmkira.task.schema import Location, ToolResponse, EventMessage  # noqa: E402
 
 
-async def main():
+async def exp():
     await Task.create_and_send(
         queue_name=receiver.platform,
         task=TaskHeader(
             sender=task.sender,
             receiver=receiver,
-            task_meta=_meta,
+            task_sign=meta,
             message=[
-                RawMessage(
+                EventMessage(
                     user_id=receiver.user_id,
                     chat_id=receiver.chat_id,
-                    text=f"🍖{__plugin_name__} Run Failed：{exception}"
+                    text=f"🍖{__plugin_name__} Run Failed：{exception},report it to user.",
                 )
-            ]
-        )
+            ],
+        ),
     )
-```
 
-其中，`task_meta` 参数必须由函数传递的 `task_meta` 的 `child` 函数克隆过来。
+````
 
-::: warning
-禁止修改 `continue_step` 和 `limit_child` 属性，影响递归深度。
+细节可以查看源码。
+
+#### 🍬 消息传递
+
+`message` 参数接受的是一个 `EventMessage` 类的列表，你可以直接传递消息给用户。
+
+#### 📕 任务标记
+
+`task_sign` 参数接受的即是 平台如何处理消息，和工具相关的信息。你需要派生一个新的 `task_sign`。
+
+````python
+meta = task.task_sign.reply(
+    plugin_name=__plugin_name__,
+    tool_response=[
+        ToolResponse(
+            name=__plugin_name__,
+            function_response=f"Run Failed {exception}",
+            tool_call_id=pending_task.id,
+            tool_call=pending_task,
+        )
+    ],
+)
+````
+
+可以派生的类方法有：
+
+- `reply` 回复消息，直接回复消息，并且写入记忆记录，如：`查询完毕，您的原神账号为：123456789`
+- `reprocess` 重新处理，将非人类可读的数据经过LLM再次处理后回复，如：`{json_data}`
+- `notify` 通知，只通知，不触发任何其他处理，如：`发生错误，您没有配置插件需要的常量。`
+
+::: tip
+这里的派生指路由方式，是指示消息和工具响应如何被处理。不是指功能。
 :::
 
 ## 🎃 在插件中访问/创建文件
 
-Redis 上传下载依赖一个短文件 ID。
+文件交流靠 LLM 的上下文和插件的 `file_key` 字段。（是的，文件需要通过LLM的响应才能被传递）
 
-参考以下处理
+创建一个字段接受文件 ID，然后通过 `File` 类的方法获取文件。
 
 ### 📥 下载文件
+
+从全局文件KV管理器下载文件。
 
 ````python
 async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwargs):
     """
     处理message，返回message
     """
-    _translate_file = []
-    for item in task.message:
-        if item.file:
-            for i in item.file:
-                _translate_file.append(i)
-        _file_obj = [await i.raw_file()
-                     for i in sorted(set(_translate_file), key=_translate_file.index)]
-        _file_obj = [item for item in _file_obj if item]
+    GLOBAL_FILE_HANDLER.download_file(file_key)
 ````
 
 ### 📤 上传文件
 
+用便捷构造方法上传文件。（实际上还是调用了全局文件KV管理器）
+
 ```python
+from llmkira.kv_manager.file import File
+
+
 async def test():
-    file_obj = await File.upload_file(file_name=file_name,
-                                      file_data=file_data,
-                                      created_by=uid
-                                      )
-    # Use utils.sync to convert async to sync
-    file_obj = sync(File.upload_file(file_name=file_name,
-                                     file_data=file_data,
-                                     created_by=uid
-                                     )
-                    )
+    _files = await File.upload_file(
+        creator=receiver.uid,
+        file_name=file[0],
+        file_data=file[1],
+    )
 ```
-
-`file_id` 只能是 Redis 存放文件的键名，不能随便写。
-
-如果你要使用 `url` 上传，请使用 `File` 的类方法。
 
 ## 📩 注册 EntryPoint Group
 
-文档参考 https://python-poetry.org/docs/pyproject/#plugins
+文档参考 https://pdm-project.org/latest/reference/pep621/#entry-points
 
 ```toml
-[tool.poetry.plugins."llmkira.extra.plugin"]
-# The entrypoint name is the name of the plugin.
-# 前面和后面都要唯一，注册钩子的时候会用到
+[project.entry-points."llmkira.extra.plugin"] # const value as "llmkira.extra.plugin"
 bilisearch = "llmbot_plugin_bilisearch"
+# <your plugin id>=<your plugin name>
 ```
 
 等号的后面是插件的包名，前面是唯一键（请确保不会与其他插件冲突）
-
-```toml
-[tool.poetry]
-name = "llmbot_plugin_bilisearch"
-```
 
 ::: warning
 你**必须注册** EntryPoint 才能被机器人启动程序检索到。
 :::
 
-## 🔨 发布包
+## 🔨 发布到 PyPi
 
-`poetry publish` 发布包，或者使用 CI 自动发布。
+登陆 PyPi 仓库，创建一个新的包，然后使用模板仓库的 CI/CD 自动发布。
 
-### 🔧 ️包管理说明
+![pypi](/docs/_assert/pypi.png)
 
-每次升级时，都要更新 `version` 字段。
+当你这样配置时，CI 可以无密钥自动发布包。
 
-每次变更依赖或修改依赖文件 `pyproject.toml`，都要运行 `poetry lock` 命令更新依赖锁。
-
-你可以在发布前运行 `poetry install` 命令检查并安装当前库到本地环境。
-
-### ⚙️ CI自动发布
-
-在 `.github/workflows/publish.yml` 文件中写入如下内容：
-
-```yml
+````yaml
 name: publish
+
 on:
+  workflow_dispatch:
   push:
     tags:
-      - v*
+      - pypi-*
+
+permissions:
+  contents: read
+
 jobs:
-  release:
+  pypi-publish:
+    name: upload release to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     steps:
       - uses: actions/checkout@v3
-      - name: Publish python package
-        uses: JRubics/poetry-publish@v1.16
-        with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
-```
 
-仓库主界面右下角新建 `Release`, 新建 `v` 开头的标签，创建后即可触发自动发布。
+      - uses: pdm-project/setup-pdm@v3
+
+      - name: Publish package distributions to PyPI
+        run: pdm publish
+````
+
+### 🔧 发布
+
+仓库主界面右下角新建 `Release`, 新建 `pypi-` 开头的标签，创建后即可触发自动发布。

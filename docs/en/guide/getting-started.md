@@ -1,116 +1,85 @@
 # 📝 Deployment Guide
 
-## 📦 Check system
+## 📦 System Check
 
-Please confirm that your system language set is UTF8, otherwise enter `dpkg-reconfigure locales` to configure the
-language.
+For Debian servers, please make sure that your system locale is set to UTF8. Otherwise, use `dpkg-reconfigure locales` command to configure the language.
 
-Please make sure that the memory of your server is greater than `1G`.
+Please ensure that your server has more than `1GB` of memory.
 
-::: tip
-The base operating load is approximately 600MB of memory per receiver + transmitter (one platform).
-Receivers and transmitters can be deployed separately, but the database must be shared.
+::: tip Note
+We have fallback options in case you don't deploy `Redis` and `MongoDB`. We will use an in-memory database in such cases, which is sufficient for general usage. However, if you need to store data for a long time, we recommend deploying `Redis` and `MongoDB`. But `RabbitMQ` is required.
 :::
 
 ## 📦 Quick Start
 
-Read the [🧀 Deployment Documentation](https://llmkira.github.io/Docs/) for more information.
-
-::: warning Test Before You Run
-Please use `python3 start_sender.py` `python3 start_receiver.py` to test whether it can run normally.
-
-If you are using Docker, you can use `docker-compose up -f docker-compose.yml` to test whether it can run normally in
-front.
-
-Run `python3 start_tutorial.py` to check the tutorial.
-:::
-
-### 🥣 Docker
-
-Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
-
-#### Automatic Docker/Docker-compose installation and operation
-
-If you are using a brand new server, you can use the following shell to try to automatically install this project.
-
-This script will automatically install the required services and map ports using Docker methods, if you have
-deployed `redis`, `rabbitmq`, `mongodb`.
-
-Please modify the `docker-compose.yml` file yourself.
+If you are using a fresh server, you can use the following shell command to automatically install this project.
 
 ```shell
-
 curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | bash
 ```
 
-#### Manual Docker-compose installation
+## 🥽 Manual Installation
 
 ```shell
-git clone https://github.com/LlmKira/Openaibot.git
+# Install Voice dependencies
+apt install ffmpeg
+# Install RabbitMQ
+docker pull rabbitmq:3.10-management
+docker run -d -p 5672:5672 -p 15672:15672 \
+  -e RABBITMQ_DEFAULT_USER=admin \
+  -e RABBITMQ_DEFAULT_PASS=8a8a8a \
+  --hostname myRabbit \
+  --name rabbitmq \
+  rabbitmq:3.10-management
+docker ps -l
+# Install Project
+git clone https://github.com/LlmKira/Openaibot/
 cd Openaibot
+pip install pdm
+pdm install -G bot
 cp .env.exp .env && nano .env
-docker-compose -f docker-compose.yml up -d
-
+# Test
+pdm run python3 start_sender.py
+pdm run python3 start_receiver.py
+# Host
+apt install npm
+npm install pm2 -g
+pm2 start pm2.json
 ```
 
-Update the image with `docker-compose pull`.
+## 🥽 Docker
 
-View Shell in docker, use `docker exec -it llmbot /bin/bash`, type `exit` to exit.
+Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
 
-### 🍔 Shell
+> Note that if you run this project using Docker, you will start Redis, MongoDB, and RabbitMQ. But if you're running locally, only RabbitMQ is required.
 
-To manually start using Pm2
+- Uninstall old kernel if present using `pip uninstall llm-kira`.
 
-```shell
-git clone https://github.com/LlmKira/Openaibot.git
-cd Openaibot
-pip install poetry
-poetry install --all-extras
-cp .env.exp .env && nano .env
-apt install npm -y && npm install pm2 && pm2 start pm2.json
-pm2 monit
-
-```
-
-To restart the program use `pm2 restart pm2.json`.
-
-::: tip
-It is recommended that you use Docker Compose for deployment. Or use Docker to run the database and pm2 to run the
-robot.
-
-The Docker image uses pm2-runtime to run the robot, the same way you use the shell.
-:::
-
-## 🥽 Manual installation
-
-- Use `pip uninstall llm-kira` to uninstall the old kernel.
-
-- Use `pip uninstall llmkira` to uninstall plugin dev tools.(or will cause conflict)
+- Uninstall plugin development tools if present using `pip uninstall llmkira` (otherwise it will cause conflicts).
 
 - Make sure your Python version is 3.9 or above.
 
 - Install Docker
 
 ::: tip
-To install Docker, please refer to [Official Documentation](https://docs.docker.com/engine/install/ubuntu/)
+Installation of Docker can be referred to in the [official documentation](https://docs.docker.com/engine/install/ubuntu/).
 
-To install Docker Compose, please refer to [Official Documentation](https://docs.docker.com/compose/install/)
+Installation of Docker Compose can be referred to in the [official documentation](https://docs.docker.com/compose/install/) or this [blog post](https://krau.top/posts/install-docker-one-key).
 
-Or [blog post](https://krau.top/posts/install-docker-one-key)
+Windows users can install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
-Windows users can install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-**Please make sure your database is within a bridge/LAN, otherwise the link will fail.**
+**Please make sure your databases are on the same bridge/local network, otherwise connection will fail.**
 :::
 
-At this point you can try using [Docker to run the robot](#🥣-docker), if you don’t want to use Docker you can continue
-reading.
+At this point, you can try using [Docker to run the bot](#🥣-docker). If you don't want to use Docker, you can continue reading.
+
+## 🍜 Database Support
 
 ### 🍫 Install Redis
 
-There are two ways to install the cache database, you can choose one of them.
+There are two ways to install the caching database, you can choose one of them.
 
-#### Install via command line
+#### Install via Command Line
 
 ```bash
 # Install Redis
@@ -123,33 +92,29 @@ systemctl enable redis.service --now
 ```bash
 docker pull redis:latest
 docker run -d -p 6379:6379 \
-     --name redis \
-     redis:latest
+    --name redis \
+    redis:latest
 ```
 
-::: tip tip
-It is recommended that you add a password to prevent the database from being exposed to the public network.
+::: tip Note
+It is recommended to add a password to prevent exposing the database to the public network.
 :::
 
 ### 🥕 Install MongoDB
 
-#### Install via shell
+#### Install via Command Line
 
-Please refer to the article to install MongoDB
+Refer to the following articles to install MongoDB:
 
-https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-20-04
+- [MongoDB Linux Installation Guide (Runoob)](https://www.runoob.com/mongodb/mongodb-linux-install.html)
+- [Download MongoDB Community Server](https://www.mongodb.com/try/download/community)
+- [Setting Up a Local MongoDB Database](https://www.prisma.io/dataguide/mongodb/setting-up-a-local-mongodb-database)
 
-https://www.runoob.com/mongodb/mongodb-linux-install.html
+::: tip Note
+It is recommended to add a password to prevent exposing the database to the public network.
+The project default configuration is `mongodb://admin:8a8a8a@localhost:27017/`, you can configure it in `.env` file as per your requirement.
 
-https://www.prisma.io/dataguide/mongodb/setting-up-a-local-mongodb-database
-
-::: tip Here!
-It is recommended that you add a password to prevent the database from being exposed to the public network.
-The default configuration of the project is `mongodb://admin:8a8a8a@localhost:27017/`, you can configure it yourself in
-.env.
-
-If you installed Mongodb through the shell, please use the `mongosh` command to enter the database to create a user and
-query the DSN.
+If you install MongoDB via the shell, use the `mongosh` command to enter the database, create a user, and query the DSN.
 :::
 
 #### Install via Docker
@@ -157,132 +122,113 @@ query the DSN.
 ```bash
 docker pull mongo:latest
 docker run -d -p 27017:27017 \
-   --name mongo \
-   -e MONGO_INITDB_ROOT_USERNAME="admin" \
-   -e MONGO_INITDB_ROOT_PASSWORD="8a8a8a" \
-   mongo:latest
-
+  --name mongo \
+  -e MONGO_INITDB_ROOT_USERNAME="admin" \
+  -e MONGO_INITDB_ROOT_PASSWORD="8a8a8a" \
+  mongo:latest
 ```
 
-### 🐰 Install RabbitMQ
+### 🐰 Install Message Queue
 
-There are two ways to install the cache database, you can choose one of them.
+There are two ways to install the message queue, you can choose one of them.
 
-#### Install via command line
+#### Install via Command Line
 
-To install RabbitMQ from the command line, please refer
-to [Official Documentation](https://www.rabbitmq.com/install-debian.html)
-or [blog post](https://www.leeks.info/zh_CN/latest/Linux_Notes/rabbitmq/RabbitMQ.html)
+To install RabbitMQ via the command line, please refer to the [official documentation](https://www.rabbitmq.com/install-debian.html) or this [blog post](https://www.leeks.info/zh_CN/latest/Linux_Notes/rabbitmq/RabbitMQ.html).
 
 #### Install via Docker
 
 ```bash
-#Install RabbitMQ
+# Install RabbitMQ
 docker pull rabbitmq:3.10-management
 docker run -d -p 5672:5672 -p 15672:15672 \
-         -e RABBITMQ_DEFAULT_USER=admin \
-         -e RABBITMQ_DEFAULT_PASS=admin \
-         --hostname myRabbit \
-         --name rabbitmq \
-         rabbitmq:3.10-management
+  -e RABBITMQ_DEFAULT_USER=admin \
+  -e RABBITMQ_DEFAULT_PASS=8a8a8a \
+  --hostname myRabbit \
+  --name rabbitmq \
+  rabbitmq:3.10-management
 docker ps -l
 ```
 
-::: tip tip
-`RABBITMQ_DEFAULT_USER` and `RABBITMQ_DEFAULT_PASS` are the default username and password of RabbitMQ, and you can
-modify them yourself.
-It is recommended that you modify it to prevent the database from being exposed to the public network.
+::: tip Note
+`RABBITMQ_DEFAULT_USER` and `RABBITMQ_DEFAULT_PASS` are the default username and password for RabbitMQ. You can modify them as per your requirement.
+It is recommended to modify them to prevent exposing the database to the public network.
 :::
 
-### 🛠 Clone project
+### 🛠 Clone the Project
 
 ```bash
 git clone https://github.com/LlmKira/Openaibot.git
 cd Openaibot
-
 ```
 
-- Configuration `.env` file
+- Configure the `.env` file
 
 ```bash
 cp .env.exp .env
-nano.env
-
+nano .env
 ```
 
-- ⚙️ Install dependencies
+- ⚙️ Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install pdm
+pdm install -G bot
 ```
 
 ## ▶️ Run
 
-It is recommended to use the PM2 panel to run the main body of the robot.
+It is recommended to use PM2 panel to run the bot.
 
-### PM2 Hosting
+### Running with PM2
 
 ```shell
 apt install npm
 npm install pm2 -g
 pm2 start pm2.json
-
-````
+```
 
 Other commands
 
 ```shell
 pm2 stop pm2.json # Stop
 pm2 restart pm2.json # Restart
-pm2 status pm2.json # View status
+pm2 status pm2.json # Check status
 ```
 
-### Via shell
+### Running with Shell
 
 ```bash
 python3 start_sender.py
 python3 start_receiver.py
-
 ```
 
-::: warning Here!
-When you exit the current shell, the bot also exits. You can use the `nohup` command to suspend the bot. However, we
-don't recommend this.
+::: warning Note
+When you exit the current shell, the bot will also be closed. You can use the `nohup` command to keep the bot running. However, this is not recommended.
 :::
 
-## 🫙 Run configuration
+## 🫙 Runtime Configuration
 
-Configure the corresponding environment variables to run the corresponding robot.
+You can run the corresponding bot by configuring the required environment variables.
 
-### 🥽 Runtime environment variables
+### 🥽 Common Runtime Environment Variables
 
-| variable name       | value                  | description                                                  |
-|---------------------|------------------------|--------------------------------------------------------------|
-| `LLMBOT_STOP_REPLY` | 1                      | If value is 1, stop receiving replies                        |
-| `LLMBOT_LOG_OUTPUT` | DEBUG                  | If the value is DEBUG, print a long debug log to the screen. |
-| `SERVICE_PROVIDER`  | `public`,`private`.... | Auth Model Provider in `llmkira/middleware/service_provider` |
-
-::: info
-
-Modify the `SERVICE_PROVIDER` variable to change the authentication method.
-
-Config the service provider limits/whitelist in `settings.toml` file.
-
-The default value is `public`, which means that the robot is open to the public.
-:::
+| Variable Name   | Value         | Description                                                                                        |
+| --------------- | ------------- | -------------------------------------------------------------------------------------------------- |
+| `STOP_REPLY`    | 1             | If the value is 1, stop receiving replies                                                          |
+| `DEBUG`         | Debug         | If configured with any value, long debug logs will be printed to the terminal.                      |
 
 ### 🥛 Telegram
 
 ```ini
 TELEGRAM_BOT_TOKEN = 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 TELEGRAM_BOT_PROXY_ADDRESS = socks5://127.0.0.1:7890
-
 ```
 
-| Variable name                | Description | Get                                    |
-|------------------------------|-------------|----------------------------------------|
-| `TELEGRAM_BOT_TOKEN`         | TelegramBot | [Telegram Bot](https://t.me/BotFather) |
-| `TELEGRAM_BOT_PROXY_ADDRESS` | Aiohttp     |                                        |
+| Variable Name             | Description                    | How to Obtain                                       |
+| ------------------------- | ------------------------------ | --------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN`      | Telegram Bot Token             | [Telegram Bot](https://t.me/BotFather)               |
+| `TELEGRAM_BOT_PROXY_ADDRESS` | Aiohttp Proxy Address        |                                                     |
 
 ### 🍖 Discord
 
@@ -292,35 +238,40 @@ DISCORD_BOT_PREFIX = !
 DISCORD_BOT_PROXY_ADDRESS = socks5://
 ```
 
-To apply for Discord Bot, please go to [Official Platform](https://discord.com/developers/applications)
+To apply for a Discord Bot, go to the [official platform](https://discord.com/developers/applications).
 
-Click on `OAuth2 URL Generator` sheet, select the permission group `bot`, then select `Send Messages`
-and `Read Message History`,`Send Messages in Theads` `Attach Files` `Mentions Everyone` `Use Slash Command`
+Click on `oauth2/url-generator` and select the permission group `bot`. You need to select the following permissions:
 
-Copy the link to the browser and open it, select the
-server where you want to add the robot, and then click `Authorize`.
+```ini
+`Send Messages`
+`Read Message History`
+`Send Messages in Threads`
+`Attach Files`
+`Mention Everyone`
+`Use Slash Commands`
+```
 
-#### Intents Apply
+Generate and copy the link to open it in a browser, select the server where you want to add the bot, and click `Authorize`.
 
-Open the bot page,Turn on `Message Content Intent`
+#### Privileged Intent
+
+To access more than 100 servers, you need to go to the Bot tab, open `Message Content Intent`, and participate in the verification required if you have more than 100 servers.
 
 ```ini
 my_intents = (
-             Intents.GUILDS |
-             Intents.GUILD_MESSAGES |
-             Intents.DM_MESSAGES |
-             Intents.MESSAGE_CONTENT
-             )
+    Intents.GUILDS |
+    Intents.GUILD_MESSAGES |
+    Intents.DM_MESSAGES |
+    Intents.MESSAGE_CONTENT
+)
 ```
 
-::: warning Here!
-Once your bot reaches 100 or more servers, this will require verification and approval.
+::: warning Note
+Once your bot reaches 100 or more servers, verification and approval will be required.
 [Notice](https://support.discord.com/hc/en-us/articles/360040720412)
 :::
 
 ### 🍗 Slack
-
-The Slack platform requires you to create the app yourself and then add it to your workspace.
 
 ```ini
 SLACK_APP_TOKEN = xapp
@@ -329,37 +280,33 @@ SLACK_SIGNING_SECRET = xxxxxxx
 SLACK_BOT_PROXY_ADDRESS = http
 ```
 
-Open [Slack App Center](https://api.slack.com/apps/) and create a new application.
+To create an application in the Slack platform, add it to your workspace.
 
-- Configuration key
+- Configuring the Keys
 
-Find the `Signing Secret` tab on the homepage and look for `SLACK_SIGNING_SECRET`.
+On the homepage, find the `Signing Secret` tab to get the `SLACK_SIGNING_SECRET`.
 
-Find the `App-Level Tokens` tab and look for `SLACK_APP_TOKEN`.
+Find the `App-Level Tokens` tab to get the `SLACK_APP_TOKEN`.
 
-Open the Oauth tab and find the `Bot User OAuth Token` as `SLACK_BOT_TOKEN`.
+Open the Oauth tab, find the `Bot User OAuth Token`, and use it as the `SLACK_BOT_TOKEN`.
 
-- enable socket mode
+- Enable Socket Mode
 
-Turn on `Socket Mode`
+Enable `Socket Mode`.
 
-- Turn on event subscription
+- Enable Event Subscriptions
 
-Go to event-subscriptions and enable `Event Subscriptions` on the page
-, subscribe to the following events: `message.channels`, `message.im`, `message.groups`.
+Go to `Event Subscriptions` and enable it on the page, subscribe to the following events: `message.channels`, `message.im`, `message.groups`.
 
-- Enable read and write permissions
+- Enable Read & Write Permissions
 
-Go to oauth and find `Bot Token Scopes`
-, and select the following
-permissions: `chat:write`, `channels:read`, `commands`, `files:read`, `files:write`, `im:read`, `im:history`, `group:history `, `im:write`, `channel:write`, `channel:history`
-(There may be some additional permissions).
+Go to `oauth`, find the `Bot Token Scopes`, and select the following scopes: `chat:write`, `channels:read`, `commands`, `files:read`, `files:write`, `im:read`, `im:history`, `group:history`, `im:write`, `channel:write`, `channel:history` (there may be additional scopes).
 
-- Register all Slash commands
+- Register All Slash Commands
 
-Go to Slash Commands to register all Slash commands. See [Command Guide](/guide/command.md) for the command list.
+Go to `Slash Commands` and register all the slash commands. Refer to the [Command Guide](/guide/command.md) for the command table.
 
-Reinstall the APP, invite your robot to the channel, and use `@BOT` to call your robot.
+Reinstall the app and invite your bot to the channels by calling it with `@BOT`.
 
 ### 🍔 Kook
 
@@ -367,44 +314,32 @@ Reinstall the APP, invite your robot to the channel, and use `@BOT` to call your
 KOOK_BOT_TOKEN = 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 ```
 
-Go to [Kook Developer Center](https://developer.kookapp.cn) and create a new application in the upper left corner.
+Go to [Kook Developer Center](https://developer.kookapp.cn), create a new application on the top left corner.
 
-Get it and fill in your Kook robot Token.
+Get and fill in your Kook bot token.
 
-## 🍤 Configure Openai endpoint
+## 🍤 Configure OpenAI Endpoint
 
-```ini
-OPENAI_API_KEY = sk-xxx
-OPENAI_API_MODEL = gpt-3.5-turbo-0613
-OPENAI_API_ENDPOINT = https://api.openai.com/v1/chat/completions
-OPENAI_API_ORG_ID = org-xxx
-OPENAI_API_PROXY = socks5://127.0.0.1:7890
+Login can be done in two ways.
+
+- `Login via url`: Use `/login <a token>$<something like https://provider.com/login>` to Login. The program posts the token to the interface to retrieve configuration information. [How to develop this](https://github.com/LlmKira/Openaibot/blob/81eddbff0f136697d5ad6e13ee1a7477b26624ed/app/components/credential.py#L20).
+- `Login`: Use `/login https://<api endpoint>/v1$<api key>$<the model>$<tool model such as gpt-3.5-turbo>` to login.
+
+Alternatively, you can configure a global model to be used by users who haven't logged in.
+
+```dotenv
+GLOBAL_OAI_KEY=sk-xxx
+GLOBAL_OAI_MODEL=gpt-3.5-turbo
+GLOBAL_OAI_TOOL_MODEL=gpt-3.5-turbo
+GLOBAL_OAI_ENDPOINT=https://api.openai.com/v1/
 ```
 
-::: warning Endpoint
-Please make sure your Openai API Endpoint is complete.
+::: tip Note
+`GLOBAL_OAI_TOOL_MODEL` is the global tool model and is only used for logical judgment with a higher invocation frequency.
 :::
 
-For a list of all Openai models supported except the `0314` series, please refer
-to [Openai API](https://beta.openai.com/docs/api-reference/).
+### 🍟 Using Non-OpenAI Models
 
-Supports two modes: `FunctionCall` and `ToolCall`.
+You can use [gateway](https://github.com/Portkey-AI/gateway) or [one-api](https://github.com/songquanpeng/one-api) as a converter. Alternatively, you can use online service providers such as [OhMyGpt](https://www.ohmygpt.com).
 
-Users can apply for API Key at [Openai](https://beta.openai.com/).
-
-User data and usage are recorded in a Mongodb database.
-
-### 🍟 Unofficial backend
-
-If you use [One-API](https://github.com/songquanpeng/one-api) as a shunt and use a model that does not support
-functions, then you may not be able to use some based on
-Function of Func Calling.
-Such as functions, file support, etc.
-
-If you're using Azure, make sure the version you're using supports the functions.
-
-This program can be used without `functions`
-Run single point reply, but when sending the request, it will
-have `functions: Optional[List[Function]]` `function_call: Optional[str]` parameter.
-
-
+If you are using Azure, make sure your version supports functions.

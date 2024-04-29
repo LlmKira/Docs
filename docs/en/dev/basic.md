@@ -1,203 +1,111 @@
-# 📝 Plug-in Development Guide
+# 📝 Plugin Development Guide
 
-> This process may be out of date, it is recommended to start development directly from the template repo.
-> Also, you can refer to the `llmkira/extra/`
+![Func](https://raw.githubusercontent.com/LlmKira/.github/main/llmbot/func_call_big.png)
 
-The sample plug-in library used in this article: https://github.com/LlmKira/llmbot_plugin_bilisearch
+> This process may be outdated. It is recommended to start development directly from the template repository. You can
+> also refer to the internal plugin `llmkira/extra/`.
 
-OpenaiBot provides an OPENAPI interface registration system for third-party plug-ins. This article will introduce how to
-build a plug-in.
-
-::: tip
-Because the plug-in mechanism is implemented with reference to `Nonebot`, plug-in development is similar to NoneBot
-Plugin.
-:::
-
-## 📌 Structural specification
-
-```
-Infrastructure example
-├── LICENSE
-├── llmbot_plugin_bilisearch
-│ └─ __init__.py
-├── poetry.lock
-├── pyproject.toml
-└── README.md
-```
-
-`README.md` is the project description file.
-
-`pyproject.toml`
-It is the package information file of the project, including the package name, dependencies, author, homepage and other
-configurations. See [detailed options](https://python-poetry.org/docs/pyproject/).
-
-`poetry.lock`
-It is a project dependency lock file that locks the warehouse dependency version so that all collaborators use the same
-version of dependency. This file needs to be updated using the `poetry lock` command when updating dependent versions.
-
-`llmbot_plugin_bilisearch` is the main body of the plug-in in the example, and contains the real execution file and
-resources of the plug-in.
+OpenaiBot provides an OPENAPI interface registration system and template repository for third-party plugins. Plugin
+template: https://github.com/LlmKira/llmbot_plugin_bilisearch. Please modify this project template for quick
+development.
 
 ::: tip
-Because pypi does not allow uploading large files, the plug-in packaging folder should not upload large resource files.
+Since the plugin mechanism is implemented based on `Nonebot`, plugin development is similar to NoneBot Plugin.
 :::
 
-`LICENSE` is the open source agreement file of the project and has certain legal effect. To select a protocol, please
-refer to [Zhihu Question](https://www.zhihu.com/question/19568896).
+Make sure you have installed a code editor and Python environment (version greater than 3.9). Check or view the version
+by entering `python -v` in the Shell console or CMD command line.
 
-### 🔗 Import verification
-
-First make sure you have installed a code editor and Python environment (version greater than 3.9). In the Shell console
-or CMD command line, enter `python -v` to check or view the version.
-
-#### Download the required tools
+### PDM Environment Management
 
 ```shell
 pip install llmkira
-pip install poetry
+pip install pdm
+pdm add <package>
+pdm install
+
 ```
 
-`llmkira`
-It is a packaged collection of robot main files, and the plug-in needs to import the classes in it for use. There is an
-imported [example](https://github.com/LlmKira/llmbot_plugin_bilisearch/blob/main/llmbot_plugin_bilisearch/__init__.py).
+## 📦 Development Process
 
-`poetry` is a widely used dependency management and packaging
-tool. [Introduction to basic commands](https://python-poetry.org/docs/basic-usage/).
+The plugin is composed of function classes, utility classes, metadata, function functions, and parameter validation
+classes.
 
-::: info Common commands
+The plugin name inside the function must be referenced by the `__plugin_name__` parameter.
 
-- `poetry init` creates a `pyproject.toml` file
-- `poetry lock` updates dependent locks
-- `poetry add <name>` Add dependencies
-- `poetry install` installs the current library into the local environment
-- `poetry build` build library
-- `poetry publish` publishing library
-  :::
+### 🔧 Testing Environment
 
-Create a new project on Github and pull it locally.
+You can put the plugin folder under `Openaibot/llmkira/extra/plugins`, and the program will load it automatically.
 
-Use a code editor to open the local project folder, then create the plug-in folder, open a Shell at the current project
-location and enter `poetry init` to establish the basic package structure.
-
-Complete the `pyproject.toml` file by entering the required information.
-
-Use the `poetry add <some>` command or edit the configuration file to add dependencies.
-
-```toml
-[tool.poetry.dependencies]
-python = "^3.9"
-bilibili-api-python = "^16.1.0"
-```
-
-At this point, the basic structure of the project has been established.
-
-## 📦 Development process
-
-The plug-in is internally composed of function classes, tool classes, meta information, functional functions, and
-parameter verification classes.
-
-The plug-in name within the function must be referenced by the `__plugin_name__` parameter.
-
-### 🔧 How to test in real time
-
-You can put the plug-in into `Openaibot/llmkira/extra/plugins` under the project to mount the test locally.
-
-Or use poetry to install the mount locally.
+### 🍬 Installing the llmkira Framework
 
 ```shell
-cd your_plugin_path
-poetry install
-
+pdm add llmkira --dev
+# This won't affect the bot
 ```
 
-### 🪣 Add variables and verification
+### 🪣 Understand Architecture Validation
 
-**The following code must be placed at the beginning for architecture version verification.**
+When there are major changes to the plugin system, you need to update the plugin architecture.
+
+The code below demonstrates the architecture validation when the plugin starts.
 
 ```python
-__package_name__ = "llmbot_plugin_bilisearch"
 __plugin_name__ = "search_in_bilibili"
-__openapi_version__ = ...  # refer https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/__init__.py#L27
+__openapi_version__ = "20240416"
 
-from llmkira.sdk.func_calling import verify_openapi_version
+from llmkira.sdk.tools import verify_openapi_version  # noqa: E402
 
-verify_openapi_version(__package_name__, __openapi_version__)  # Verify // [!code hl]
-
+verify_openapi_version(__plugin_name__, __openapi_version__)  # Verification // [!code hl]
 ```
 
-### ⚙️ Define function class
+The `openapi_version` parameter records the current synchronization version. If the host framework updates, the Plugin
+may need to synchronize this parameter to support new interfaces.
 
-#### 🧩 Create from pydanitc
+::: tip When do I need to update my plugin?
+The OpenAPI component sets which versions of plugins can be loaded. If your plugin version is too low, an error will
+occur, and you will receive an issue from the user.
+:::
+
+### ⚙️ Understanding How to Declare a Utility
+
+It's very simple. We directly inherit the `BaseModel` class from Pydantic and define the parameters in the class. The
+underlying code will construct the Schema of the utility directly from the class.
 
 ```python
 from llmkira.sdk.schema import Function
 from pydantic import BaseModel, ConfigDict, field_validator, Field
+from typing import Optional
 
-__plugin_name__ = "some_function"
 
-
-# function verification class
-class Alarm(BaseModel):
+class TOOL_NAME(BaseModel):
     """
-    Set a timed reminder (only for minutes)
+    TOOL DESCRIPTION
     """
-    delay: int = Field(..., description="The delay time, in minutes")
-    content: str = Field(..., description="reminder content")
-    model_config = ConfigDict(extra="allow")
+    delay: int = Field(..., description="Arguments description")
+    content: str = Field(..., description="Arguments description")
+    option_content: Optional[str] = Field(..., description="Arguments description")
 
     @field_validator("delay")
     def delay_validator(cls, v):
         if v < 0:
             raise ValueError("delay must be greater than 0")
         return v
-
-
-function = Function.parse_from_pydantic(schema_model=Alarm, plugin_name=__plugin_name__)
-
-# Function(name='Alarm', description='Set a timed reminder (only for minutes)', parameters=Parameters(type='object', properties={'delay': {'description': 'The delay time, in minutes', 'title': 'Delay', 'type': 'integer'}, 'content': {'description': 'reminder content', 'title': 'Content', 'type': 'string'}}, required=['content', 'delay']))
 ```
 
-#### 🧲 Use `Function` to define function class
+#### 🩼 Where will this class be used?
 
-```python
-__plugin_name__ = "search_in_bilibili"
+The program will pass the function parameters generated by LLM to this class and then instantiate it.
 
-from llmkira.sdk.endpoint.openai import Function
-
-bilibili = Function(
-    name=__plugin_name__,
-    description="Search videos on bilibili.com(bilibili)",
-).update_config(
-    config=Function.FunctionExtra(
-        system_prompt="🔍Searching on google.com...",
-    )
-)
-bilibili.add_property(
-    property_name="keywords",
-    property_description="Keywords entered in the search box",
-    property_type="string",
-    required=True
-)
-```
-
-The information here will be submitted to LLM for use, and you can use the `Prompt project` to improve them.
-
-The `required` attribute is not necessarily valid.
-
-### 🩼 Add function verification class
-
-In actual situations, even if your function defines the parameter required=True, the return may be None, so we need a
-parameter validation class to check the parameters.
-
-With the help of [pydantic](https://pydantic-docs.helpmanual.io/), we can easily implement parameter verification.
+With the help of [Pydantic](https://pydantic-docs.helpmanual.io/), we can conveniently implement accurate and convenient
+parameter validation.
 
 ```python
 from pydantic import BaseModel, ConfigDict
 
 
-class Bili(BaseModel):  # Parameters // [!code focus:5]
+class Bili(BaseModel):  # Arguments // [!code focus:5]
     keywords: str
-
     model_config = ConfigDict(extra="allow")
 
 
@@ -209,270 +117,14 @@ except Exception as e:
     pass
 ```
 
-Please use pydantic for parameter verification in the `run` method of the tool class.
+### ⚓️ Function Functions
 
-### ⚓️ Function function
+Function functions are not necessary. We just need to process the parameters passed in the plugin's `run` method.
 
-A function function is a function that implements a function. Write whatever you want.
+#### 🔨 Disable errors
 
-This function is free to use, but the OPENAPI architecture later needs to match an error decorator to count errors.
-
-Therefore, it is recommended to write a main function to facilitate subsequent upgrades.
-
-### 🍭 Tools
-
-All tool classes must
-inherit [BaseTool](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L14).
-
-The schema is as follows(maybe not the latest version):
-
-```python
-import os
-import re
-from abc import abstractmethod, ABC
-from typing import Optional, Dict, Any, List, Union, final, Literal
-from typing import TYPE_CHECKING
-
-from pydantic import BaseModel, Field, PrivateAttr
-
-if TYPE_CHECKING:
-    pass
-
-
-class BaseTool(ABC, BaseModel):
-    """
-    基础工具类，所有工具类都应该继承此类
-    """
-
-    __slots__ = ()
-    silent: bool = Field(False, description="Send message before running")
-    function: "Function" = Field(..., description="func")
-    keywords: List[str] = Field([], description="keywords match")
-    pattern: Optional[re.Pattern] = Field(None, description="re match")
-    require_auth: bool = Field(False, description="need user confirm")
-    repeatable: bool = Field(False, description="can be call repeatable")
-    deploy_child: Literal[0, 1] = Field(1, description="if 0 will not roll next function")
-    require_auth_kwargs: dict = {}
-    env_required: List[str] = Field([], description="token_env like os,ALSO NEED env_prefix")
-    env_prefix: str = Field("", description="prefix of env,finally will be prefix+env_name")
-    file_match_required: Optional[re.Pattern] = Field(None, description="re.compile 文件名正则")
-    extra_arg: Dict[Any, Any] = Field({}, description="extra arg, nothing")
-    __run_arg: Dict[Any, Any] = PrivateAttr(default_factory=dict)
-
-    # exp: re.compile(r"file_id=([a-z0-9]{8})")
-
-    @final
-    def get_os_env(self, env_name):
-        """
-        获取 PLUGIN_+ 公共环境变量
-        """
-        env = os.getenv("PLUGIN_" + env_name, None)
-        return env
-
-    def env_help_docs(self, empty_env: List[str]) -> str:
-        """
-        Help documentation for environment variables
-        :param empty_env: 未被配置的环境变量列表
-        :return: 帮助文档/警告
-        """
-        assert isinstance(empty_env, list), "empty_env must be list"
-        return "You need to configure ENV to start use this tool"
-
-    @abstractmethod
-    def pre_check(self) -> Union[bool, str]:
-        """
-        Pre-check, if it is not qualified, return False, otherwise return True
-        """
-        return ...
-
-    @abstractmethod
-    def func_message(self, message_text, **kwargs):
-        """
-        If qualified, return message, otherwise return None, indicating that it is not processed.
-        
-        Determines whether this function is added to the selection. Can be customized freely
-        
-        message_text: 消息文本
-        message_raw: 消息原始数据 `RawMessage`
-        """
-        # message_raw=kwargs.get("message_raw")
-        for i in self.keywords:
-            if i in message_text:
-                return self.function
-        # 正则匹配
-        if self.pattern:
-            match = self.pattern.match(message_text)
-            if match:
-                return self.function
-        return None
-
-    @abstractmethod
-    async def failed(self,
-                     task: "TaskHeader", receiver: "TaskHeader.Location",
-                     exception, env: dict,
-                     arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                     ):
-        """
-        Run this function if the function fails
-        Write back the message and notify the message
-        :param task: 任务
-        :param receiver: 接收者
-        :param exception: 异常
-        :param env: 环境变量
-        :param arg: 参数
-        :param pending_task: 任务批次
-        :param refer_llm_result: 上一次的结果
-        """
-        return ...
-
-    @abstractmethod
-    async def callback(self,
-                       task: "TaskHeader", receiver: "TaskHeader.Location",
-                       env: dict,
-                       arg: dict, pending_task: "TaskBatch", refer_llm_result: dict = None
-                       ):
-        """
-        Run this function if the function is successful
-        :param task: 任务
-        :param receiver: 接收者
-        :param arg: 参数
-        :param env: 环境变量
-        :param pending_task: 任务批次
-        :param refer_llm_result: 上一次的结果
-        """
-        return ...
-
-    @abstractmethod
-    async def run(self, *,
-                  task: "TaskHeader", receiver: "TaskHeader.Location",
-                  arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-                  ):
-        """
-        Run this function
-        :param task: 任务
-        :param receiver: 接收者
-        :param arg: 参数
-        :param env: 环境变量
-        :param pending_task: 任务批次
-        :param refer_llm_result: 上一次的结果
-        """
-        return ...
-```
-
-::: warning
-The `callback` function has no effect at the moment.
-:::
-
-Please consider internationalization when constructing keyword parameters, and try to avoid public keywords, and
-single-word keywords are prohibited.
-
-::: danger
-**After inheriting the `BaseTool` class, it is forbidden to define `__init__`**
-:::
-
-#### 🎳 Dynamic activation
-
-After each conversation is delivered, a new function table will be constructed based on the user corpus. The plugin
-selector determines which candidate functions are based on character matches, `keywords` and `pattern`
-The parameters determine whether this conversation is a candidate for this function.
-
-The `func_message` function determines whether this function is activated.
-
-After `file_match_required` is defined, it will be matched in the file message. If the match is successful, this
-function will be activated, otherwise it will be disabled!
-
-The `deploy_child` parameter determines whether this function continues to pass down (the end marker).
-
-During each recursion, the last function will be ignored. If you want the function to be reusable, you can set
-the `repeatable` attribute.
-
-The default chain recursion depth is 6, defined through the `limit_child` attribute. **The plug-in prohibits redefining
-this parameter.**
-
-::: tip
-When a new dialogue chain is started, the first node will inherit the function attributes of the previous dialogue
-chain.
-:::
-
-#### 🧃 Env statement authorization system
-
-- Statement
-
-Set the `env_required` attribute to declare the required constants.
-
-- Setup documentation
-
-Subclasses override the `env_help_docs` function to return help documentation. This document is called when a variable
-is missing and is sent to the user.
-
-```python
-async def run(self,
-              task: "TaskHeader", receiver: "TaskHeader.Location",
-              arg: dict, env: dict, pending_task: "TaskBatch", refer_llm_result: dict = None,
-              ):
-    print(env)
-```
-
-### 🥄 Register meta information
-
-Core class `PluginMetadata`, you can view its
-composition [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84).
-
-```python
-# name
-__plugin_name__ = "search_in_bilibili"
-__openapi_version__ = ...
-PluginMetadata, FuncPair = ...  # import
-# The middle is the function code...
-
-# Core meta information
-__plugin_meta__ = PluginMetadata(
-    name=__plugin_name__,
-    description="Search videos on bilibili.com(bilibili)",
-    usage="search <keywords>",
-    openapi_version=__openapi_version__,  # OPENAPI version // [!code ++:3]
-    function={
-        FuncPair(function=bilibili, tool=BiliBiliSearch)  # Function class and tool class
-    }
-)
-
-```
-
-::: tip
-`FuncPair` binds `function` function class and `tool` tool class.
-:::
-
-The `openapi_version` parameter records the current synchronized version. If the host framework is updated, the Plugin
-may need to synchronize this parameter to support the new interface.
-
-::: tip When do I need to update my plugin?
-The OpenAPI component will set which versions of the plug-in can be loaded. If your plug-in version is too low, an error
-will be reported, and you will receive an Issue from the user.
-:::
-
-### 🥥 A priori trigger
-
-Use this decorator to block or pass responses that meet certain conditions.
-Used for filtering sensitive words, actively responding to special paragraphs without commands, dynamically configuring
-response triggers, rejecting answers from certain users, etc.
-
-```jupyterpython
-@resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
-async def on_chat_message(message: str, uid: str, **kwargs):
-    """
-    :param message: RawMessage
-    :return:
-    """
-    if "<hello>" in message:
-        return True
-```
-
-If the function returns `True`, it indicates that a pre-action is required.
-
-### 🔨 Error Hook
-
-Use this decorator to monitor action functions for errors. After too many errors are recorded, this function plug-in
-will not be called.
+Use this decorator to monitor errors in the function. After the error count is recorded too many times, the function
+plugin will not be called.
 
 ```python
 from llmkira.sdk.openapi.fuse import resign_plugin_executor
@@ -483,222 +135,408 @@ def search_in_bilibili(arg: dict, **kwargs):
     pass
 ```
 
-Note that this is a sync decorator, if your function is asynchronous, you can call utils.sync.
+### 🍭 Plugin Body
 
-### 🍩 Routing communication
+You need to inherit the `BaseTool` class to implement the body. In the lifecycle of the plugin's execution, we will call
+the `run` method. If it fails, we will call the `failed` method.
 
-We route communication to each platform by defining `Meta` and `Location` in the task message. Specific examples are as
-follows:
-
-Location can be inherited. Because you don't know who the other users are.
-
-#### 📕 Communication mode
-
-`Meta` has the following internally maintained constructors:
-
-::: warning
-`callback` receives a list of `TaskHeader.Meta.Callback` objects, which are used to record the callback information of
-plugin!
-:::
-
-##### 📍`reply_notify` notification reply
-
-Notification only, does not write back memory records, and does not trigger any processing.
-
-Used for error notifications or one-way notifications.
-
-*Examples of applicable message content*
-
-```text
-An error has occurred and youThere are no constants required to configure the plugin.
-```
-
-##### 📍`reply_raw` Reply to unreadable content
-
-This message will be written back into the memory record, as the object being queried, and will be processed by LLM as a
-reply. For example, search, data set query results.
-
-*Examples of applicable message content*
-
-```json5
-{
-  "query": "query content",
-  "item": [
-    "Query result 1",
-    "Query result 2",
-    "Query result 3"
-  ]
-}
-```
-
-::: warning
-**`reply_raw` cannot reply to file messages.**
-:::
-
-##### 📍`reply_message` Reply to readable content/file message
-
-This message is for execution replies. Reply with human-readable content. Write back the memory record and reply
-directly.
-
-*Examples of applicable message content*
-
-```text
-After querying, your Genshin Impact account is: 123456789
-```
-
-```
-file message
-```
-
-#### 📕 Custom communication mode
+In the `run` method, you need to process the parameters passed in, and then communicate with the message queue.
 
 ```python
-__plugin_name__ = ...
-task = ...
-receiver = ...
-_search_result = ...
-Task, TaskHeader, RawMessage = ...
+async def run(
+        self,
+        task: "TaskHeader",
+        receiver: "Location",
+        arg: dict,
+        env: dict,
+        pending_task: "ToolCall",
+        refer_llm_result: dict = None,
+):
+    """
+    Process the message and return the message
+    """
 
-pending_task = ...
-_meta = task.task_meta.child(__plugin_name__)  # Custom // [!code focus:7]
-_meta.callback_forward = True
-_meta.callback_forward_reprocess = False
-_meta.direct_reply = False
-_meta.write_back = True
-_meta.release_chain = True
-_meta.callback = [
-    TaskHeader.Meta.Callback.create(
-        name=__plugin_name__,
-        function_response=f"Run Failed",
-        tool_call_id=pending_task.get_batch_id()
+    _set = BiliBiliSearch.model_validate(arg)
+    _search_result = await search_on_bilibili(_set.keywords)
+    _meta = task.task_sign.reprocess(
+        plugin_name=__plugin_name__,
+        tool_response=[
+            ToolResponse(
+                name=__plugin_name__,
+                function_response=f"SearchData: {_search_result},Please give reference link when use it.",
+                tool_call_id=pending_task.id,
+                tool_call=pending_task,
+            )
+        ]
     )
-]
-
-
-async def main():
     await Task.create_and_send(
         queue_name=receiver.platform,
         task=TaskHeader(
-            sender=task.sender,
-            receiver=receiver,
-            task_meta=_meta,
-            message=[
-                RawMessage(
-                    user_id=receiver.user_id,
-                    chat_id=receiver.chat_id,
-                    text=f"🍖{__plugin_name__} Run Failed: {exception}"
-                )
-            ]
-        )
+            sender=task.sender,  # Inherit sender
+            receiver=receiver,  # Can be set individually because it may be forwarded
+            task_sign=_meta,
+            message=[],
+        ),
     )
 ```
 
-Among them, the `task_meta` parameter must be cloned from the `child` function of `task_meta` passed by the function.
-
-::: warning
-It is forbidden to modify the `continue_step` and `limit_child` attributes, which will affect the recursion depth.
+::: danger
+After inheriting the `BaseTool` class, **do not define `__init__`**
 :::
 
-## 🎃 Access/create files in the plugin
+### 🎳 Dynamic Activation
 
-Redis upload and download rely on a short file ID.
+To increase the capacity of plugins, we provide the functionality of dynamically activating plugins. The plugin can be
+activated or not based on the content and user decisions.
+Every time a new conversation is started, a new function table is built based on the user's sentences, and the plugin
+selector determines which functions are candidate functions based on character matching.
 
-Refer to the following processing
-
-### 📥 Download file
-
-````python
-async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwargs):
-    """
-    Process message and return message
-    """
-    _translate_file = []
-    for item in task.message:
-        if item.file:
-            for i in item.file:
-                _translate_file.append(i)
-        _file_obj = [await i.raw_file()
-                     for i in sorted(set(_translate_file), key=_translate_file.index)]
-        _file_obj = [item for item in _file_obj if item]
-````
-
-### 📤 Upload files
+The `func_message` function determines whether this function is activated. If it is activated, the function is returned;
+otherwise, `None` is returned.
+If you don't override this function, the plugin will use the `keywords` and `pattern` class attributes for matching by
+default.
+You are free to override this function.
 
 ```python
-async def test():
-    file_obj = await File.upload_file(file_name=file_name,
-                                      file_data=file_data,
-                                      created_by=uid
-                                      )
-    # Use utils.sync to convert async to sync
-    file_obj = sync(File.upload_file(file_name=file_name,
-                                     file_data=file_data,
-                                     created_by=uid
-                                     )
-                    )
+@abstractmethod
+def func_message(self, message_text, message_raw, address, **kwargs):
+    """
+    If the message_text contains the keyword, return the function to be executed, otherwise return None.
+    :param message_text: Message text.
+    :param message_raw: Raw message data `EventMessage`.
+    :param address: Message address `tuple(sender,receiver)`.
+    :param kwargs:
+    """
+    for word in self.keywords:
+        if word in message_text:
+            return self.function
+    # Regrex Match
+    if self.pattern:
+        match = self.pattern.match(message_text)
+        if match:
+            return self.function
+    _ignore = kwargs
+    return None
 ```
 
-`file_id` Must be the key name of the file stored in Redis, and cannot be written casually.
+::: tip
+When a new conversation chain is started, the function attributes from the previous chain are inherited in the first
+node of the new chain.
+:::
 
-If you want to pass url to upload, please use the class method of `File`.
+#### 🎳 File Activation
+
+When the message contains a file, the plugin will match it with the file name regular expression. If it matches
+successfully, the plugin will be activated.
+
+```python
+class BaseTool(BaseModel):
+    file_match_required: Optional[re.Pattern] = Field(
+        None, description="re.compile File name regular expression"
+    )
+    """File name regular expression to use the tool, exp: re.compile(r"file_id=([a-z0-9]{8})")"""
+```
+
+::: tip
+If you need to use files, define the `file_key` field in the tool parameter definition. **The file is passed to you by
+LLM**. You obtain the file by its file ID.
+:::
+
+### 🧃 Virtual Environment Variables
+
+- Declaring whether environment variables are required
+
+Override the `require_auth` function and return `True` or `False`.
+
+```python
+class BaseTool(BaseModel):
+    def require_auth(self, env_map: dict) -> bool:
+        """
+        Check if authentication is required.
+        """
+        return True
+```
+
+- Declaring the environment variable prefix and required variables
+
+```python
+class BaseTool(BaseModel):
+    env_required: List[str] = Field([], description="Environment variable requirements,ALSO NEED env_prefix")
+    """Pre-required environment variables, you should provide env_prefix"""
+    env_prefix: str = Field("", description="Environment variable prefix")
+    """Environment variable prefix"""
+```
+
+- Configuration documentation
+
+Override the `env_help_docs` function and return the help documentation. This documentation will be sent to the user
+when variables are missing, attached to the permission application section.
+
+```python
+@classmethod
+def env_help_docs(cls, empty_env: List[str]) -> str:
+    """
+    Provide help message for environment variables.
+    :param empty_env: The list of environment variables that are not configured.
+    :return: The help message.
+    """
+    message = ""
+    return message
+```
+
+- Getting system environment variables
+
+Call the `get_os_env` function to obtain system environment variables with the specific prefix `PLUGIN_`.
+This variable should be agreed upon by the deployer.
+
+```python
+@final
+def get_os_env(self, env_name):
+    """
+    Get environment variables from os.environ.
+    """
+    env = os.getenv("PLUGIN_" + env_name, None)
+    return env
+```
+
+### 🥄 Registering Metadata
+
+Instantiate the core class `PluginMetadata` to declare all the tools. You can view its
+structure [here](https://github.com/LlmKira/Openaibot/blob/main/llmkira/sdk/func_calling/schema.py#L84).
+
+```python
+# Name
+__plugin_name__ = "search_in_bilibili"
+__openapi_version__ = ...
+PluginMetadata, FuncPair = ...  # import
+# The middle is the function code...
+
+# Core metadata
+__plugin_meta__ = PluginMetadata(
+    name=__plugin_name__,
+    description="Search videos on bilibili.com",
+    usage="bilibili search <keywords>",
+    openapi_version=__openapi_version__,
+    function={
+        FuncPair(function=class_tool(BiliBiliSearch), tool=BiliBiliSearch)
+    }
+)
+
+```
+
+::: tip
+
+`FuncPair` binds the function class and the tool class.
+
+The `class_tool` function is used to convert the function class to a tool class.
+:::
+
+### 🍟 Hook
+
+A Hook is a class used to intercept messages and perform message transformation processing between senders and
+receivers.
+
+The `trigger_hook` function is used to trigger the hook, and the `hook_run` function is used to process messages.
+
+Here's an example of a `VoiceHook` hook. When it returns `True`, the action specified by the `action` parameter will be
+executed.
+
+```python
+@resign_hook()
+class VoiceHook(Hook):
+    trigger: Trigger = Trigger.RECEIVER
+
+    async def trigger_hook(self, *args, **kwargs) -> bool:
+        platform_name: str = kwargs.get("platform")  # noqa
+        messages: List[EventMessage] = kwargs.get("messages")
+        locate: Location = kwargs.get("locate")
+        for message in messages:
+            if not check_string(message.text):
+                return False
+        have_env = await EnvManager(locate.uid).get_env("VOICE_REPLY_ME", None)
+        if have_env is not None:
+            return True
+        return False
+
+    async def hook_run(self, *args, **kwargs):
+        logger.debug(f"Voice Hook {args} {kwargs}")
+        platform_name: str = kwargs.get("platform")  # noqa
+        messages: List[EventMessage] = kwargs.get("messages")
+        locate: Location = kwargs.get("locate")
+        for message in messages:
+            if not check_string(message.text):
+                return args, kwargs
+            parsed_text = parse_sentence(message.text)
+            if not parsed_text:
+                return args, kwargs
+            reecho_api_key = await EnvManager(locate.uid).get_env("REECHO_API_KEY", None)
+            voice_data = await request_cn(
+                message.text, reecho_api_key=reecho_api_key
+            )
+            if voice_data is not None:
+                ogg_data = Ffmpeg.convert(
+                    input_c="mp3", output_c="ogg", stream_data=voice_data, quiet=True
+                )
+                file = await File.upload_file(
+                    creator=locate.uid, file_name="speech.ogg", file_data=ogg_data
+                )
+                file.caption = message.text
+                message.text = ""
+                message.files.append(file)
+            else:
+                logger.error(f"Voice Generation Failed:{message.text}")
+        return args, kwargs
+
+```
+
+`hook_run` is the function responsible for handling message rotation. If an error occurs, it will be skipped
+automatically. After the parameters are passed in, the returned parameters will be passed to the next hook.
+
+Depending on the hook, we can convert output messages into voice or add attachments to input texts after checking them.
+
+### 🥥 Pre-Trigger
+
+Use this decorator to block or pass specific responses that meet certain conditions. It is used for sensitive word
+filtering, responding actively to special language segments without commands, dynamically configuring response triggers,
+and rejecting certain users' responses, etc.
+
+Here is an example of denying messages from the Telegram platform. When it returns `True`, the specified action `deny`
+will be executed.
+
+```python
+@resign_trigger(Trigger(on_platform="telegram", action="deny", priority=0))
+async def on_chat_message(message: str, uid: str, **kwargs):
+    """
+    :param message: RawMessage
+    :return:
+    """
+    if "<hello>" in message:
+        return True
+```
+
+If the function returns `True`, it means that a pre-action is required.
+
+::: tip
+`Trigger` is a Pydantic class. Please refer to the source code to see possible actions.
+:::
+
+### 🍩 Routing Communication
+
+We use the `Meta` and `Location` in the task message to communicate with various platforms. You can directly use the
+address passed in.
+
+### 🍬 Communication Mode
+
+You can send messages to users through the message queue.
+
+[Source code](https://github.com/LlmKira/Openaibot/blob/main/llmkira/task/schema.py)
+
+The `message` parameter accepts a list of `EventMessage` class objects, allowing you to pass messages directly to users.
+
+#### 🍬 Message Delivery
+
+The `task_sign.reply` method replies to the message, replies to the message directly, and writes it to the memory
+record. For example: `Query completed, your Genshin Impact account is: 123456789`.
+The `task_sign.reprocess` method reprocesses the non-human-readable data through LLM and replies. For
+example: `{json_data}`.
+The `task_sign.notify` method sends a notification without triggering any other processing. For
+example: `An error occurred, you did not configure the constants required by the plugin.`
+
+::: tip
+The derivation mentioned here refers to how messages and tool responses are processed based on the routing method, not
+the functionality.
+:::
+
+## 🎃 Accessing/Creating Files in the Plugin
+
+File communication relies on the context of LLM and the `file_key` field of the plugin. (Yes, files need to be
+transmitted through LLM's response)
+
+Create a field that accepts a file ID, and then use the methods of the `File` class to obtain the file.
+
+### 📥 Downloading Files
+
+Download files from the global file KV manager.
+
+```python
+async def run(self, task: TaskHeader, receiver: TaskHeader.Location, arg, **kwargs):
+    """
+    Process the message and return the message
+    """
+    GLOBAL_FILE_HANDLER.download_file(file_key)
+```
+
+### 📤 Uploading Files
+
+Upload files using a convenient construction method. (Actually, it still calls the global file KV manager)
+
+```python
+from llmkira.kv_manager.file import File
+
+
+async def test():
+    _files = await File.upload_file(
+        creator=receiver.uid,
+        file_name=file[0],
+        file_data=file[1],
+    )
+```
 
 ## 📩 Register EntryPoint Group
 
-Document reference https://python-poetry.org/docs/pyproject/#plugins
+Documentation reference: https://pdm-project.org/latest/reference/pep621/#entry-points
 
 ```toml
-[tool.poetry.plugins."llmkira.extra.plugin"]
-# The entrypoint name is the name of the plugin.
-# Both front and back must be unique, which will be used when registering hooks.
+[project.entry-points."llmkira.extra.plugin"]
 bilisearch = "llmbot_plugin_bilisearch"
+# <your plugin id>=<your plugin name>
 ```
 
-After the equal sign is the package name of the plug-in, and in front is the unique key (please make sure it does not
-conflict with other plug-ins)
-
-```toml
-[tool.poetry]
-name = "llmbot_plugin_bilisearch"
-```
+The equal sign is followed by the package name of the plugin, and the front part is the unique key (please ensure that
+it does not conflict with other plugins).
 
 ::: warning
-You **must register** an EntryPoint to be retrieved by the bot launcher.
+You **must register** the EntryPoint for the plugin to be detected by the bot's startup program.
 :::
 
-## 🔨 Release package
+## 🔨 Publish to PyPi
 
-`poetry publish` publishes the package, or uses CI to publish automatically.
+Login to the PyPi repository, create a new package, and then use CI/CD in the template repository to automatically
+publish it.
 
-### 🔧 ️Package management instructions
+![pypi](/docs/_assert/pypi.png)
 
-Every time you upgrade, update the `version` field.
+When you configure it like this, CI can automatically publish the package without a key.
 
-Every time you change a dependency or modify `pyproject.toml` file, run the `poetry lock` command to update the dependency
-lock.
-
-You can run the `poetry install` command to check and install the current libraries into your local environment before
-publishing.
-
-### ⚙️ CI automatic release
-
-Write the following content in the `.github/workflows/publish.yml` file:
-
-```yml
+```yaml
 name: publish
+
 on:
+  workflow_dispatch:
   push:
     tags:
-      -v*
+      - pypi-*
+
+permissions:
+  contents: read
+
 jobs:
-  release:
+  pypi-publish:
+    name: upload release to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     steps:
       - uses: actions/checkout@v3
-      - name: Publish python package
-        uses: JRubics/poetry-publish@v1.16
-        with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
+
+      - uses: pdm-project/setup-pdm@v3
+
+      - name: Publish package distributions to PyPI
+        run: pdm publish
 ```
 
-Create a new `Release` in the lower right corner of the main interface of the warehouse, and create a new tag starting
-with `v`. Once created, automatic release can be triggered.
+### 🔧 Publish
+
+Create a `Release` from the repository main page, create a tag starting with `pypi-`, and it will trigger the automatic
+publishing.

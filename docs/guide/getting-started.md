@@ -2,82 +2,59 @@
 
 ## 📦 检查系统
 
-请确认您的系统语言集为 UTF8，否则输入 `dpkg-reconfigure locales` 配置语言。
+对于 Debian 服务器，请确认您的系统语言集为 UTF8，否则输入 `dpkg-reconfigure locales` 配置语言。
 
 请确认您服务器的内存大于 `1G`。
 
 ::: tip 提示
-基础运行负载为，每个接收器+发送器(一个平台)约为 600MB 内存。
-接收器和发送器可以分开部署，但是数据库必须共享。
+我们有 fallback 方案，如果您不部署 `Redis` 和 `MongoDB`，我们会使用内存数据库。对于一般的使用，这是足够的。
+不过如果您需要长时间存储数据，我们建议您部署 `Redis` 和 `MongoDB`。
+但是 `RabbitMQ` 是必须的。
 :::
 
 ## 📦 快速开始
 
-阅读 [🧀 部署文档](https://llmkira.github.io/Docs/) 获得更多信息。
-
-::: warning 重要
-请提前用 `python3 start_sender.py`  `python3 start_receiver.py` 测试是否能正常运行。
-
-Docker 用户可以使用 `docker-compose up -f docker-compose.yml` 前台预测试。
-
-运行 `python3 start_tutorial.py` 观看教程。
-:::
-
-### 🥣 Docker
-
-Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
-
-#### 自动 Docker/Docker-compose 安装运行
-
-如果你在使用一台崭新的服务器，你可以使用下面的Shell来尝试自动安装本项目。
-
-此脚本会自动使用 Docker 方法安装所需服务并映射端口，如果您已经部署了 `redis` ，`rabbitmq` ，`mongodb` 。
-
-请自行修改 `docker-compose.yml` 文件。
+如果您使用全新服务器，您可以使用以下 Shell 自动安装本项目。
 
 ```shell
-
 curl -sSL https://raw.githubusercontent.com/LLMKira/Openaibot/main/deploy.sh | bash
 ```
 
-#### 手动 Docker-compose安装
-
-```shell
-git clone https://github.com/LlmKira/Openaibot.git
-cd Openaibot
-cp .env.exp .env&&nano .env
-docker-compose -f docker-compose.yml up -d
-
-```
-
-更新镜像使用 `docker-compose pull`。
-
-在 docker 中查看 Shell，使用 `docker exec -it llmbot /bin/bash`，输入 `exit` 退出。
-
-### 🍔 Shell
-
-人工使用 pm2 启动
-
-```shell
-git clone https://github.com/LlmKira/Openaibot.git
-cd Openaibot
-pip install poetry
-poetry install --all-extras
-cp .env.exp .env && nano .env
-apt install npm -y && npm install pm2 && pm2 start pm2.json
-pm2 monit
-
-```
-
-重启程序使用 `pm2 restart pm2.json` 。
-
-::: tip
-推荐您使用 Docker Compose 进行部署。或者使用 Docker 运行数据库，pm2 运行机器人。
-
-Docker 镜像使用 pm2-runtime 运行机器人，和您使用 shell 是一样的。
-:::
-
 ## 🥽 手动安装
+
+```shell
+# Install Voice dependencies
+apt install ffmpeg
+# Install RabbitMQ
+docker pull rabbitmq:3.10-management
+docker run -d -p 5672:5672 -p 15672:15672 \
+  -e RABBITMQ_DEFAULT_USER=admin \
+  -e RABBITMQ_DEFAULT_PASS=8a8a8a \
+  --hostname myRabbit \
+  --name rabbitmq \
+  rabbitmq:3.10-management
+docker ps -l
+# Install Project
+git clone https://github.com/LlmKira/Openaibot/
+cd Openaibot
+pip install pdm
+pdm install -G bot
+cp .env.exp .env && nano .env
+# Test
+pdm run python3 start_sender.py
+pdm run python3 start_receiver.py
+# Host
+apt install npm
+npm install pm2 -g
+pm2 start pm2.json
+```
+
+## 🥽 Docker
+
+Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
+
+> Note that if you run this project using Docker, you will start Redis, MongoDB, and RabbitMQ. But if you're running
+> locally, just RabbitMQ
 
 - 使用 `pip uninstall llm-kira` 卸载旧内核。(如果有)
 
@@ -102,7 +79,9 @@ Windows 用户可以安装 [Docker Desktop](https://www.docker.com/products/dock
 
 此时您可以尝试使用 [Docker 运行机器人](#🥣-docker)，如果您不想使用 Docker，您可以继续阅读。
 
-### 🍫 安装缓存数据库
+## 🍜 数据库支持
+
+### 🍫 安装 Redis
 
 提供两种方式安装缓存数据库，您可以选择其中一种。
 
@@ -192,7 +171,6 @@ docker ps -l
 ```bash
 git clone https://github.com/LlmKira/Openaibot.git
 cd Openaibot
-
 ```
 
 - 配置 `.env` 文件
@@ -200,13 +178,13 @@ cd Openaibot
 ```bash
 cp .env.exp .env
 nano .env
-
 ```
 
 - ⚙️ 安装依赖
 
 ```bash
-pip install -r requirements.txt
+pip install pdm
+pdm install -G bot
 ```
 
 ## ▶️ 运行
@@ -219,7 +197,6 @@ pip install -r requirements.txt
 apt install npm
 npm install pm2 -g
 pm2 start pm2.json
-
 ````
 
 其他命令
@@ -246,22 +223,12 @@ python3 start_receiver.py
 
 配置相应的环境变量即可运行对应的机器人。
 
-### 🥽 运行时环境变量
+### 🥽 一些运行时环境变量
 
 | 变量名 | 值| 描述 |
 |--------------------------------|------------------------------------|-- -------------------------------------------------- ----------|
-| `LLMBOT_STOP_REPLY` | 1 | 如果值为 1，则停止接收回复 |
-| `LLMBOT_LOG_OUTPUT` | 调试| 如果值为 DEBUG，则将长调试日志打印到屏幕上。 |
-| `SERVICE_PROVIDER` | `public`,`private`...... | `llmkira/middleware/service_provider` 中的身份验证组件 |
-
-::: info
-
-修改 `SERVICE_PROVIDER` 变量以更改身份验证方法。
-
-在 `settings.toml` 文件中配置服务提供商限制/白名单。
-
-默认值为`public`，意为机器人向公众开放。
-:::
+| `STOP_REPLY` | 1 | 如果值为 1，则停止接收回复 |
+| `DEBUG` | 调试| 如果被配置为任何值，则将长调试日志打印到终端上。 |
 
 ### 🥛 Telegram
 
@@ -374,35 +341,31 @@ KOOK_BOT_TOKEN = 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 
 ## 🍤 配置Openai端点
 
-```ini
-OPENAI_API_KEY = sk-xxx
-OPENAI_API_MODEL = gpt-3.5-turbo-0613
-OPENAI_API_ENDPOINT = https://api.openai.com/v1/chat/completions
-OPENAI_API_ORG_ID = org-xxx
-OPENAI_API_PROXY = socks5://127.0.0.1:7890
+登陆采用两个方案。
+
+- `Login via url`: Use `/login <a token>$<something like https://provider.com/login>` to Login. The program posts the
+  token to the interface to
+  retrieve configuration
+  information, [how to develop this](https://github.com/LlmKira/Openaibot/blob/81eddbff0f136697d5ad6e13ee1a7477b26624ed/app/components/credential.py#L20).
+- `Login`: Use `/login https://<api endpoint>/v1$<api key>$<the model>$<tool model such as gpt-3.5-turbo>` to login
+
+当然，你可以配置全局模型，给没有登陆的用户使用。
+
+```dotenv
+GLOBAL_OAI_KEY=sk-xxx
+GLOBAL_OAI_MODEL=gpt-3.5-turbo
+GLOBAL_OAI_TOOL_MODEL=gpt-3.5-turbo
+GLOBAL_OAI_ENDPOINT=https://api.openai.com/v1/
 ```
 
-::: warning 提示
-请确保您的 Openai API Endpoint 是完整的。
+::: tip 提示
+`GLOBAL_OAI_TOOL_MODEL` 是全局工具模型，只是用于逻辑判断，调用频率会比较高。
 :::
 
-支持除 `0314` 系列的所有 Openai 模型列表请参考 [Openai API](https://beta.openai.com/docs/api-reference/)。
+### 🍟 使用非 Openai 模型
 
-支持 `FunctionCall` 和 `ToolCall` 两种模式。
-
-用户可以在 [Openai](https://beta.openai.com/) 申请 API Key。
-
-用户数据和使用记录在 Mongodb 数据库中。
-
-### 🍟 非官方后端
-
-如果你使用 [One-API](https://github.com/songquanpeng/one-api) 作为分流器并使用了不支持 functions 的模型，那么你可能无法使用一些基于
-Func Calling 的功能。
+你可以使用 [gateway](https://github.com/Portkey-AI/gateway) 或 [one-api](https://github.com/songquanpeng/one-api)
+作为转换器。或者使用在线服务商，如 [OhMyGpt](https://www.ohmygpt.com)。
 
 如果你在使用 Azure ，请确认你使用的版本支持 functions。
-
-本程序可以在不能使用`functions`的情况下运行单点回复，
-但是其发送请求时，会带有 `functions: Optional[List[Function]]` `function_call: Optional[str]` 参数。
-
-
 
