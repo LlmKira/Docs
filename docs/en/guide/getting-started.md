@@ -325,7 +325,7 @@ Login can be done in two ways.
 - `Login via url`: Use `/login <a token>$<something like https://provider.com/login>` to Login. The program posts the token to the interface to retrieve configuration information. [How to develop this](https://github.com/LlmKira/Openaibot/blob/81eddbff0f136697d5ad6e13ee1a7477b26624ed/app/components/credential.py#L20).
 - `Login`: Use `/login https://<api endpoint>/v1$<api key>$<the model>$<tool model such as gpt-3.5-turbo>` to login.
 
-Alternatively, you can configure a global model to be used by users who haven't logged in.
+Alternatively, you can configure a global model in the `.env` file, to be used by users who haven't logged in.
 
 ```dotenv
 GLOBAL_OAI_KEY=sk-xxx

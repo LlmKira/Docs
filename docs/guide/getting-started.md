@@ -350,7 +350,7 @@ KOOK_BOT_TOKEN = 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
   information, [how to develop this](https://github.com/LlmKira/Openaibot/blob/81eddbff0f136697d5ad6e13ee1a7477b26624ed/app/components/credential.py#L20).
 - `Login`: Use `/login https://<api endpoint>/v1$<api key>$<the model>$<tool model such as gpt-3.5-turbo>` to login
 
-当然，你可以配置全局模型，给没有登陆的用户使用。
+当然，你可以在 `.env` 文件中配置全局模型，给没有登陆的用户使用。
 
 ```dotenv
 GLOBAL_OAI_KEY=sk-xxx
