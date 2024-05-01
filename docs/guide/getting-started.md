@@ -6,7 +6,7 @@
 
 请确认您服务器的内存大于 `1G`。
 
-::: tip 提示
+::: warning 提示
 我们有 fallback 方案，如果您不部署 `Redis` 和 `MongoDB`，我们会使用内存数据库。对于一般的使用，这是足够的。
 不过如果您需要长时间存储数据，我们建议您部署 `Redis` 和 `MongoDB`。
 但是 `RabbitMQ` 是必须的。
@@ -51,10 +51,11 @@ pm2 start pm2.json
 
 ## 🥽 Docker
 
-Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
+::: tip 提示
+如果你使用 Docker 运行本项目，你会启动 Redis, MongoDB 和 RabbitMQ。如果你本地运行，可以只启动 RabbitMQ。
+:::
 
-> Note that if you run this project using Docker, you will start Redis, MongoDB, and RabbitMQ. But if you're running
-> locally, just RabbitMQ
+Build Hub: [sudoskys/llmbot](https://hub.docker.com/repository/docker/sudoskys/llmbot/general)
 
 - 使用 `pip uninstall llm-kira` 卸载旧内核。(如果有)
 
@@ -225,10 +226,10 @@ python3 start_receiver.py
 
 ### 🥽 一些运行时环境变量
 
-| 变量名 | 值| 描述 |
-|--------------------------------|------------------------------------|-- -------------------------------------------------- ----------|
-| `STOP_REPLY` | 1 | 如果值为 1，则停止接收回复 |
-| `DEBUG` | 调试| 如果被配置为任何值，则将长调试日志打印到终端上。 |
+| 变量名          | 值  | 描述                       |
+|--------------|----|--------------------------|
+| `STOP_REPLY` | 1  | 如果值为 1，则停止接收回复           |
+| `DEBUG`      | 调试 | 如果被配置为任何值，则将长调试日志打印到终端上。 |
 
 ### 🥛 Telegram
 

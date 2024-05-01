@@ -213,10 +213,10 @@ You can run the corresponding bot by configuring the required environment variab
 
 ### 🥽 Common Runtime Environment Variables
 
-| Variable Name   | Value         | Description                                                                                        |
-| --------------- | ------------- | -------------------------------------------------------------------------------------------------- |
-| `STOP_REPLY`    | 1             | If the value is 1, stop receiving replies                                                          |
-| `DEBUG`         | Debug         | If configured with any value, long debug logs will be printed to the terminal.                      |
+| Variable Name | Value | Description                                                                    |
+|---------------|-------|--------------------------------------------------------------------------------|
+| `STOP_REPLY`  | 1     | If the value is 1, stop receiving replies                                      |
+| `DEBUG`       | Debug | If configured with any value, long debug logs will be printed to the terminal. |
 
 ### 🥛 Telegram
 
@@ -225,10 +225,10 @@ TELEGRAM_BOT_TOKEN = 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 TELEGRAM_BOT_PROXY_ADDRESS = socks5://127.0.0.1:7890
 ```
 
-| Variable Name             | Description                    | How to Obtain                                       |
-| ------------------------- | ------------------------------ | --------------------------------------------------- |
-| `TELEGRAM_BOT_TOKEN`      | Telegram Bot Token             | [Telegram Bot](https://t.me/BotFather)               |
-| `TELEGRAM_BOT_PROXY_ADDRESS` | Aiohttp Proxy Address        |                                                     |
+| Variable Name                | Description           | How to Obtain                          |
+|------------------------------|-----------------------|----------------------------------------|
+| `TELEGRAM_BOT_TOKEN`         | Telegram Bot Token    | [Telegram Bot](https://t.me/BotFather) |
+| `TELEGRAM_BOT_PROXY_ADDRESS` | Aiohttp Proxy Address |                                        |
 
 ### 🍖 Discord
 
