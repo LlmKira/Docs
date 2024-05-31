@@ -5,7 +5,7 @@
 ```shell
 clear - Deletes chat records
 login - Login to the bot
-logout - clear credential
+logout - Clear credential
 help - Displays documentation
 chat - Conversation
 task - Use a function to converse

@@ -4,8 +4,8 @@
 
 ```shell
 clear - Deletes chat records
-login - set credential
-logout - clear credential
+login - Set credential
+logout - Clear credential
 help - Displays documentation
 chat - Conversation
 task - Use a function to converse
