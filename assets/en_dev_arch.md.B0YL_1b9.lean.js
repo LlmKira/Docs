@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as a}from"./chunks/framework.Cg1_NNyv.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"en/dev/arch.md","filePath":"en/dev/arch.md","lastUpdated":1714398384000}'),r={name:"en/dev/arch.md"};function c(n,o,s,d,p,_){return a(),t("div")}const f=e(r,[["render",c]]);export{m as __pageData,f as default};
